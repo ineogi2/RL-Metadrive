@@ -6,8 +6,8 @@ sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 from metadrive import SafeMetaDriveEnv
 
 Kp_list = [1]
-Ki_list = [0.001, 0.002, 0.003, 0.004]
-Kd_list = [0.001, 0.01, 0.02, 0.03, 0.004]
+Ki_list = [0.002]
+Kd_list = [0.001]
 
 def speed_control(cur_err, prv_err, err_sum, dt, Kp, Ki, Kd):
     # hyperparameter
