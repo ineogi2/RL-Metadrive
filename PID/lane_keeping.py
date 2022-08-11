@@ -5,7 +5,7 @@ sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 
 from metadrive import SafeMetaDriveEnv
 
-def speed_control(speed_err, dt, speed_gain=[1,0.002,0.001]):
+def speed_control(speed_err, dt, speed_gain=[1,0,0]):
 
     [Kp, Ki, Kd] = speed_gain
     [cur_err, prv_err, err_sum] = speed_err
@@ -13,7 +13,7 @@ def speed_control(speed_err, dt, speed_gain=[1,0.002,0.001]):
 
     return acc
 
-def dir_control(dir_err, dt, dir_gain=[0.3, 0.0, 2]):
+def dir_control(dir_err, dt, dir_gain=[0.1, 0.0, 0]):
 
     [Kp, Ki, Kd] = dir_gain
     [cur_err, prv_err, err_sum] = dir_err
@@ -31,9 +31,9 @@ dir_err_sum = 0
 dir_cur_err = 0
 dir_prv_err = 0
 
-Kp_list = [0.3, 0.1, 2]
-Ki_list = [0, 1, 0.1, 0.01, 0.001]
-Kd_list = [0, 1, 5, 0.1, 0.001]
+Kp_list = [0.1]
+Ki_list = [0]
+Kd_list = [0]
 
 env=SafeMetaDriveEnv(dict(start_seed=0, use_render=True)); env.reset()
 
@@ -51,16 +51,16 @@ for Kp in Kp_list:
                 cur_speed, heading = info['vehicle_speed'], info['vehicle_heading']; heading_sine = 1 if heading >=0 else -1
                 # speed_list.append(cur_speed)
 
-                print('\n', heading_sine, heading)
+                # print('\n', heading_sine, heading)
 
                 dt = cur_time - prv_time
 
                 speed_cur_err = speed_aim - cur_speed; speed_err_sum += speed_cur_err
                 speed_err = (speed_cur_err, speed_prv_err, speed_err_sum)
 
-                dir_cur_err = math.degrees(math.acos(heading))*heading_sine/100; dir_err_sum += dir_cur_err; heading_sine
-                dir_err = (dir_cur_err, dir_prv_err, dir_err_sum); print(dir_err)
-                dir_err_list.append(dir_cur_err)
+                dir_cur_err = math.degrees(math.asin(heading)); dir_err_sum += dir_cur_err; heading_sine
+                dir_err = (dir_cur_err, dir_prv_err, dir_err_sum)
+                # dir_err_list.append(dir_cur_err); print(dir_cur_err)
                 acc = speed_control(speed_err, dt); steering_angle = dir_control(dir_err, dt, [Kp, Ki, Kd])
 
                 input = [steering_angle, acc]#; print(input)
