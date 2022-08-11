@@ -44,7 +44,7 @@ obs, reward, done, info = env.step([0,0])
 
 for Kp in Kp_list:
     for Ki in Ki_list:
-        for Kd in Kd_list:
+        while True:
             while (not done) & (len(dir_err_list)<=200):
                 cur_time = time.time()
 
@@ -61,7 +61,7 @@ for Kp in Kp_list:
                 dir_cur_err = math.degrees(math.asin(heading)); dir_err_sum += dir_cur_err; heading_sine
                 dir_err = (dir_cur_err, dir_prv_err, dir_err_sum)
                 # dir_err_list.append(dir_cur_err); print(dir_cur_err)
-                acc = speed_control(speed_err, dt); steering_angle = dir_control(dir_err, dt, [Kp, Ki, Kd])
+                acc = speed_control(speed_err, dt); steering_angle = dir_control(dir_err, dt)
 
                 input = [steering_angle, acc]#; print(input)
                 obs, reward, done, info = env.step(input)
@@ -71,11 +71,11 @@ for Kp in Kp_list:
 
                 env.render()
 
-            plt.plot(dir_err_list[:200],'b') # x_range=plt.xlim()
-            plt.hlines(0,0,len(dir_err_list),colors='red')
-            file_name = 'Kp='+str(Kp)+" & Ki="+str(Ki)+" & Kd="+str(Kd)+'.png'
-            plt.savefig(file_name) # plt.show()
-            plt.close()
+            # plt.plot(dir_err_list[:200],'b') # x_range=plt.xlim()
+            # plt.hlines(0,0,len(dir_err_list),colors='red')
+            # file_name = 'Kp='+str(Kp)+" & Ki="+str(Ki)+" & Kd="+str(Kd)+'.png'
+            # plt.savefig(file_name) # plt.show()
+            # plt.close()
 
             # input("Press Enter to continue...")
             dir_err_list = []
