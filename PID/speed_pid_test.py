@@ -51,8 +51,8 @@ for Kp in Kp_list:
                 cur_speed = info['vehicle_speed']
                 speed_list.append(cur_speed)
 
-                print("\ncur_speed : ",cur_speed)
-                # print(info)
+                # print("\ncur_speed : ",cur_speed)
+                print(info)
 
                 dt = cur_time - prv_time
                 cur_err = speed_aim - cur_speed

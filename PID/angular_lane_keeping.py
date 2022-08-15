@@ -33,7 +33,7 @@ dir_prv_err = 0
 
 Kp_list = [0.1]
 Ki_list = [0]
-Kd_list = [0]
+Kd_list = [0.0001]
 
 env=SafeMetaDriveEnv(dict(start_seed=0, use_render=True)); env.reset()
 
@@ -44,10 +44,10 @@ obs, reward, done, info = env.step([0,0])
 
 for Kp in Kp_list:
     for Ki in Ki_list:
-        while True:
+        for Kd in Kd_list:
             while (not done) & (len(dir_err_list)<=200):
                 cur_time = time.time()
-
+                # print(info['vehicle_heading_sine'])
                 cur_speed, heading = info['vehicle_speed'], info['vehicle_heading']; heading_sine = 1 if heading >=0 else -1
                 # speed_list.append(cur_speed)
 
@@ -61,7 +61,7 @@ for Kp in Kp_list:
                 dir_cur_err = math.degrees(math.asin(heading)); dir_err_sum += dir_cur_err; heading_sine
                 dir_err = (dir_cur_err, dir_prv_err, dir_err_sum)
                 # dir_err_list.append(dir_cur_err); print(dir_cur_err)
-                acc = speed_control(speed_err, dt); steering_angle = dir_control(dir_err, dt)
+                acc = speed_control(speed_err, dt); steering_angle = dir_control(dir_err, dt, [Kp, Ki, Kd])
 
                 input = [steering_angle, acc]#; print(input)
                 obs, reward, done, info = env.step(input)
