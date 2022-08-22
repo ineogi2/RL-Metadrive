@@ -16,7 +16,7 @@ cur_lane = 0; prv_lane = 1
 while True:
     while not done:
         for _ in range(50):
-            cur_speed, heading, (cur_lane, cur_lateral) = info['vehicle_speed'], info['vehicle_heading'], info['vehicle_heading_sine']
+            cur_speed, heading, (cur_lane, lane_width, cur_lateral) = info['vehicle_speed'], info['vehicle_heading'], info['vehicle_heading_sine']
             if prv_lane != cur_lane: controller._reset()
 
             speed_aim = straight_line_speed if (cur_lane==1) or (abs(cur_lateral)>0.015) else straight_line_speed
@@ -29,9 +29,9 @@ while True:
             env.render()
             prv_lane = cur_lane
 
-        (input, steps) = controller.lane_change(1, cur_speed)
-        for _ in range(10):
-            cur_speed, heading, (cur_lane, cur_lateral) = info['vehicle_speed'], info['vehicle_heading'], info['vehicle_heading_sine']
+        (input, steps) = controller.lane_change(-1, cur_speed)
+        for _ in range(20):
+            cur_speed, heading, (cur_lane, lane_width, cur_lateral) = info['vehicle_speed'], info['vehicle_heading'], info['vehicle_heading_sine']
             if prv_lane != cur_lane: controller._reset()
 
             speed_aim = straight_line_speed if (cur_lane==1) or (abs(cur_lateral)>0.015) else straight_line_speed
@@ -46,7 +46,7 @@ while True:
         if done: break
 
         while (not done):
-            cur_speed, heading, (cur_lane, cur_lateral) = info['vehicle_speed'], info['vehicle_heading'], info['vehicle_heading_sine']
+            cur_speed, heading, (cur_lane, lane_width, cur_lateral) = info['vehicle_speed'], info['vehicle_heading'], info['vehicle_heading_sine']
             if prv_lane != cur_lane: controller._reset()
 
             speed_aim = straight_line_speed if (cur_lane==1) or (abs(cur_lateral)>0.015) else straight_line_speed
