@@ -25,6 +25,8 @@
 * git commit -m "commit message" - commit 등록  
 * git push origin main - 업로드  
 
+* git rm -r --cached . - cash 삭제(.gitignore 같은거 수정 시)
+
 ### Ubuntu  
 #### -복사
 * cp [option] <원본> <사본>  

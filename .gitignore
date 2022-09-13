@@ -1,0 +1,9 @@
+# metadrive ignore
+metadrive/
+!metadrive/metadrive/envs/base_env.py
+!metadrive/metadrive/envs/metadrive_env.py
+!metadrive/metadrive/envs/safe_metadrive_env.py
+
+# CPO
+CPO/
+!CPO/torch/
