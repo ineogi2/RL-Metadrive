@@ -23,12 +23,12 @@ sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 from metadrive import SafeMetaDriveEnv
 
 sys.path.append("/home/ineogi2/RL-Lab")
-from PID.PID_controller import PID_controller
+from PID.PID_controller_v2 import PID_controller
 
 def train(main_args):
     algo_idx = 1
-    agent_name = 'CPO'
-    env_name = "Safexp-PointGoal1-v0"
+    agent_name = '0914'
+    env_name = "Safe-metadrive-env"
     max_ep_len = 1000
     max_steps = 4000
     epochs = 2500

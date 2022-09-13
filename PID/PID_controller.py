@@ -54,9 +54,7 @@ class PID_controller:
         return input
 
     def vehicle_control(self, clipped_decision):
-        clipped_decision = list(clipped_decision)
-        tmp = max(clipped_decision)
-        num = clipped_decision.index(tmp)
+        num = np.argmax(clipped_decision)
 
         if num==0:
             input = self.lane_keeping()
