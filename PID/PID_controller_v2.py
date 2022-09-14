@@ -55,17 +55,23 @@ class PID_controller:
 
     def vehicle_control(self, clipped_decision):
         num = np.argmax(clipped_decision)
-
         if num==2:
-            self.go_left()
+            if self.cur_lane_num == self.aim_lane_num:
+                self.go_left()
+            else:
+                pass
         elif num==3:
-            self.go_right()
+            if self.cur_lane_num == self.aim_lane_num:
+                self.go_right()
+            else:
+                pass
 
         if self.lane_change_sign:
             input = self.lane_change()
         else: 
             input = self.lane_keeping()
-        if num == 1: input[0] = -0.5
+
+        if num == 1: input[1] = -0.5
         return input
 
     def lane_keeping(self):

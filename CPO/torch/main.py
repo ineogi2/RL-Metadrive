@@ -52,7 +52,7 @@ def train(main_args):
         'max_kl':0.001,
         'damping_coeff':0.01,
         'gae_coeff':0.97,
-        'cost_d':25.0/1000.0,
+        'cost_d':1.0/1000.0,
     }
     if torch.cuda.is_available():
         device = torch.device('cuda:0')
@@ -99,6 +99,8 @@ def train(main_args):
                 # clipped_decision = clipped_action_tensor.detach().cpu().numpy()
                 action = controller.vehicle_control(decision)
                 next_state, reward, done, info = env.step(action)
+                if ep_step % 20 == 0:
+                    print(f"decision : {decision} / cur_lane : {controller.cur_lane_num} / aim_lane : {controller.aim_lane_num}")
                 controller._update(info)
                 cost = info['cost']
 

@@ -1,8 +1,6 @@
 import math
 import numpy as np
 
-from CPO.torch.agent import clip
-
 class PID_controller:
     def __init__(self, info, speed_gain=[1,0,0.01], steering_gain=[0.7,0,0]):
         self.speed_gain=speed_gain
@@ -53,25 +51,12 @@ class PID_controller:
             input += pid_gain[i]*err[i]
         return input
 
-    def vehicle_control(self, clipped_decision):
-        num = np.argmax(clipped_decision)
+    def vehicle_control(self):
 
-        if num==0:
-            input = self.lane_keeping()
-        elif num==1:
-            input = self.lane_keeping()
-            input[1] = -0.7
-        elif num==2:
-            self.go_left()
+        if self.lane_change_sign:
             input = self.lane_change()
-        elif num==3:
-            self.go_right()
-            input = self.lane_change()
-
-        # if self.lane_change_sign:
-        #     input = self.lane_change()
-        # else: 
-        #     input = self.lane_keeping()
+        else: 
+            input = self.lane_keeping()
         return input
 
     def lane_keeping(self):

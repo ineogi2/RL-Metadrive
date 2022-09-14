@@ -370,7 +370,7 @@ class BaseEnv(gym.Env):
             _, cost_infos[v_id] = self.cost_function(v_id)
             done = done_function_result or self.dones[v_id]
             self.dones[v_id] = done
-
+        # print(list(obses['default_agent'])[0],  list(obses['default_agent'])[120], list(obses['default_agent'])[-1])
         step_infos = concat_step_infos([engine_info, done_infos, reward_infos, cost_infos])
 
         # For extreme case only. Force to terminate all vehicles if the environmental step exceeds 5 times horizon.
