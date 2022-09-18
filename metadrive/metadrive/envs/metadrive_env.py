@@ -251,7 +251,7 @@ class MetaDriveEnv(BaseEnv):
 
         ##############changed here!!!!!!!!!!!!!!!!!!!!!!!#######################################
         step_info["vehicle_speed"] = vehicle.speed
-
+        step_info["vehicle_position"] = vehicle.position
         #calculate sine value for the heading --> left or right! if 1, car is right side of the lane
         # if -1, car is left side of the lane
         step_info["vehicle_heading_sine"] = vehicle.heading_diff_sine(vehicle.lane)

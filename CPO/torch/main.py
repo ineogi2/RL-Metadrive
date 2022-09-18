@@ -23,7 +23,7 @@ sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 from metadrive import SafeMetaDriveEnv
 
 sys.path.append("/home/ineogi2/RL-Lab")
-from PID.PID_controller_v2 import PID_controller
+from PID.PID_controller_v3 import PID_controller
 
 def train(main_args):
     algo_idx = 1
