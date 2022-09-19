@@ -27,10 +27,10 @@ from PID.PID_controller_v3 import PID_controller
 
 def train(main_args):
     algo_idx = 1
-    agent_name = '0914'
+    agent_name = '0919'
     env_name = "Safe-metadrive-env"
-    max_ep_len = 1000
-    max_steps = 4000
+    max_ep_len = 500
+    max_steps = 1000
     epochs = 2500
     save_freq = 10
     algo = '{}_{}'.format(agent_name, algo_idx)
@@ -67,16 +67,15 @@ def train(main_args):
     random.seed(seed)
 
     # env = Env(env_name, seed, max_ep_len)
-    env=SafeMetaDriveEnv(dict(use_render=True,
+    env=SafeMetaDriveEnv(dict(use_render=False,
                     random_lane_width=True,
                     random_lane_num=True,
-                    map=2,
                     start_seed=random.randint(0, 1000)))
     agent = Agent(env, device, args)
 
     # for wandb
-    # wandb.init(project='[torch] CPO')
-    # if main_args.graph: graph = Graph(1000, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
+    wandb.init(project='[torch] CPO', entity='ineogi2', name='0919')
+    if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
         trajectories = []
@@ -87,26 +86,34 @@ def train(main_args):
             state = env.reset()
             _, _, done, info = env.step([0,0])
             controller = PID_controller(info)
+            waypoint = info['vehicle_position']
+
+            time_step=0
             score = 0
             cv = 0
             step = 0
+
             while True:
+                time_step += 1
                 ep_step += 1
                 step += 1
-                state_tensor = torch.tensor(state, device=device, dtype=torch.float)
-                action_tensor = agent.getAction(state_tensor, is_train=True)
-                decision = action_tensor.detach().cpu().numpy()
-                # clipped_decision = clipped_action_tensor.detach().cpu().numpy()
-                action = controller.vehicle_control(decision)
+
+                if controller.is_arrived or time_step > 10:
+                    state_tensor = torch.tensor(state, device=device, dtype=torch.float)
+                    action_tensor = agent.getAction(state_tensor, is_train=True)
+                    waypoint = action_tensor.detach().cpu().numpy()
+                    print(f"new waypoint : {waypoint}")
+                    controller.update(info, waypoint); time_step=0
+
+                action = controller.lane_keeping()
                 next_state, reward, done, info = env.step(action)
-                if ep_step % 20 == 0:
-                    print(f"decision : {decision} / cur_lane : {controller.cur_lane_num} / aim_lane : {controller.aim_lane_num}")
-                controller._update(info)
+
+                controller.update(info, waypoint)
                 cost = info['cost']
 
                 done = True if step >= max_ep_len else done
                 fail = True if step < max_ep_len and done else False
-                trajectories.append([state, decision, reward, cost, done, fail, next_state])
+                trajectories.append([state, waypoint, reward, cost, done, fail, next_state])
 
                 state = next_state
                 score += reward
@@ -124,7 +131,7 @@ def train(main_args):
         log_data = {"score":score, 'cv':cv, "value loss":v_loss, "cost value loss":cost_v_loss, "objective":objective, "cost surrogate":cost_surrogate, "kl":kl, "entropy":entropy}
         print(log_data)
         if main_args.graph: graph.update([score, objective, v_loss, kl, entropy])
-        # wandb.log(log_data)
+        wandb.log(log_data)
         if (epoch + 1)%save_freq == 0:
             agent.save()
 

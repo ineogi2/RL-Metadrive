@@ -256,7 +256,8 @@ class MetaDriveEnv(BaseEnv):
         # if -1, car is left side of the lane
         step_info["vehicle_heading_sine"] = vehicle.heading_diff_sine(vehicle.lane)
         step_info["vehicle_length"] = vehicle.top_down_length
-        step_info["vehicle_heading"]= 2*(vehicle.heading_diff(vehicle.lane) - 0.5) #this is a cosine value of the theta difference. 
+        step_info["vehicle_heading"] = vehicle.heading
+        # step_info["vehicle_heading"]= 2*(vehicle.heading_diff(vehicle.lane) - 0.5) #this is a cosine value of the theta difference. 
         ########################################################################################
 
         if vehicle.arrive_destination:
