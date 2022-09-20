@@ -1,0 +1,65 @@
+/home/ineogi2/RL-Lab/metadrive/metadrive/utils/config.py:213: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  if isinstance(value, (np.float32, np.float64, np.float)):
+/home/ineogi2/RL-Lab/metadrive/metadrive/utils/config.py:215: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  if isinstance(value, (np.int, np.int32, np.int64, np.uint)):
+/home/ineogi2/RL-Lab/metadrive/metadrive/component/vehicle_module/lidar.py:111: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  mask = np.zeros((self.num_lasers, ), dtype=np.bool)
+Traceback (most recent call last):
+  File "/home/ineogi2/RL-Lab/CPO/torch/main.py", line 154, in <module>
+    train(args)
+  File "/home/ineogi2/RL-Lab/CPO/torch/main.py", line 86, in train
+    state = env.reset()
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/envs/safe_metadrive_env.py", line 34, in reset
+    return super(SafeMetaDriveEnv, self).reset(*args, **kwargs)
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/envs/base_env.py", line 337, in reset
+    self.engine.reset()
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/engine/base_engine.py", line 195, in reset
+    manager.reset()
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/manager/map_manager.py", line 49, in reset
+    map = self.spawn_object(PGMap, map_config=map_config, random_seed=None)
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/manager/map_manager.py", line 21, in spawn_object
+    map = self.engine.spawn_object(object_class, auto_fill_random_seed=False, *args, **kwargs)
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/engine/base_engine.py", line 106, in spawn_object
+    obj = object_class(**kwargs)
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/map/base_map.py", line 51, in __init__
+    self._generate()
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/map/pg_map.py", line 51, in _generate
+    self._big_generate(parent_node_path, physics_world)
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/map/pg_map.py", line 72, in _big_generate
+    big_map.generate(self._config[self.GENERATE_TYPE], self._config[self.GENERATE_CONFIG])
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/algorithm/BIG.py", line 79, in generate
+    if self.big_helper_func():
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/algorithm/BIG.py", line 87, in big_helper_func
+    self._forward()
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/algorithm/BIG.py", line 128, in _forward
+    success = self.construct(block)
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/algorithm/BIG.py", line 122, in construct
+    return block.construct_block(self._render_node_path, self._physics_world)
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/block/base_block.py", line 90, in construct_block
+    success = self._sample_topology()
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/pgblock/pg_block.py", line 113, in _sample_topology
+    no_cross = self._try_plug_into_previous_block()
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/pgblock/std_t_intersection.py", line 8, in _try_plug_into_previous_block
+    success = super(StdTInterSection, self)._try_plug_into_previous_block()
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/pgblock/t_intersection.py", line 18, in _try_plug_into_previous_block
+    no_cross = super(TInterSection, self)._try_plug_into_previous_block()
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/pgblock/intersection.py", line 75, in _try_plug_into_previous_block
+    right_lane, success = self._create_part(attach_lanes, attach_road, self.radius, intersect_nodes, i)
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/pgblock/intersection.py", line 108, in _create_part
+    self._create_left_turn(radius, lane_num, attach_left_lane, attach_road, intersect_nodes, part_idx)
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/pgblock/intersection.py", line 202, in _create_left_turn
+    CreateRoadFrom(
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/component/pgblock/create_pg_block_utils.py", line 148, in CreateRoadFrom
+    no_cross = not check_lane_on_road(
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/utils/scene_utils.py", line 59, in check_lane_on_road
+    x_max_1, x_min_1, y_max_1, y_min_1 = get_lanes_bounding_box(lanes)
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/utils/scene_utils.py", line 81, in get_lanes_bounding_box
+    line_points = get_curve_contour(lanes, extra_lateral) if isinstance(lanes[0], CircularLane) \
+  File "/home/ineogi2/RL-Lab/metadrive/metadrive/utils/scene_utils.py", line 135, in get_curve_contour
+    lane.direction) * np.array([math.cos(phi), math.sin(phi)])
+KeyboardInterrupt
+new waypoint : [6.2260633 0.7214838]
+new waypoint : [5.8968735 3.375332 ]
