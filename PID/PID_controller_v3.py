@@ -1,4 +1,5 @@
 import math
+from xmlrpc.client import boolean
 import numpy as np
 
 class PID_controller:
@@ -12,8 +13,9 @@ class PID_controller:
         self.vehicle_length=info["vehicle_length"]
         self.vehicle_pos=info["vehicle_position"]
         self.lateral, self.lateral_distance=[0,0],0
+        self.waypoint=self.vehicle_pos
 
-        self.update(info, waypoint=(0,0))
+        self.update(info, waypoint=0)
 
 # --------------------inner only--------------------
 
@@ -49,6 +51,13 @@ class PID_controller:
     def _is_arrived(self):
         self.is_arrived = True if self.lateral_distance < 1 else False
 
+    def _process_waypoint(self, waypoint):
+        norm = self.norm(waypoint[0], waypoint[1]) / 5
+        delta_x = waypoint[0]/norm
+        delta_y = waypoint[1]/norm
+
+        return (delta_x, delta_y)
+
     # math tools
     def norm(self, x,y):
         return math.sqrt(x**2+y**2)
@@ -61,8 +70,15 @@ class PID_controller:
     def update(self, info, waypoint):
         self.speed = info['vehicle_speed']
         self._heading = info["vehicle_heading"]
+        self.vehicle_pos=info["vehicle_position"]
 
-        self.lateral = waypoint - self.vehicle_pos
+        if isinstance(waypoint, int): pass
+        else:
+            waypoint = self._process_waypoint(waypoint)
+            self.waypoint = self.vehicle_pos + waypoint
+            print(f'new waypoint : {self.waypoint}')
+
+        self.lateral = self.waypoint - self.vehicle_pos
         self.lateral_distance = self.norm(self.lateral[0], self.lateral[1])
         self._is_arrived()
 

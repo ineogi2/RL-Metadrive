@@ -1,0 +1,142 @@
+/home/ineogi2/RL-Lab/metadrive/metadrive/utils/config.py:213: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  if isinstance(value, (np.float32, np.float64, np.float)):
+/home/ineogi2/RL-Lab/metadrive/metadrive/utils/config.py:215: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  if isinstance(value, (np.int, np.int32, np.int64, np.uint)):
+/home/ineogi2/RL-Lab/metadrive/metadrive/component/vehicle_module/lidar.py:111: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  mask = np.zeros((self.num_lasers, ), dtype=np.bool)
+(5.0, -0.0)
+new waypoint : [2.3729494 6.533222 ]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [3.6792011 4.7904773]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [3.554722  2.0338702]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [8.286305  6.3029585]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [1.7525508 1.7023013]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [3.5796876 4.8070283]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [-0.9896797  9.895171 ]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [1.6144365 4.646218 ]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [0.47546   0.5846539]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [2.6681714 6.2769537]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [1.9465122 6.7972803]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [-0.22375345  5.4965777 ]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [1.3731887 8.178122 ]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [4.895447 7.010791]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [ 7.530577 11.010972]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [1.379111  1.5272045]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [2.4495447 1.1899486]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [4.8345838 7.5666227]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [5.748387 5.910447]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [-0.98831   7.942544]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [10.294983  -4.1510825]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [10.488369  -1.6620892]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [2.881351 3.748709]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [-0.44412255  5.7231092 ]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [ 9.306296 11.31032 ]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [ 3.4651523 -0.5279541]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [10.062271  9.66433 ]
+(5.0, -0.0)
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [1.7444813 5.8967185]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [6.8930807 2.9381423]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [3.6491919 7.7155585]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [1.7913101 6.7839937]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [1.5339172 7.058016 ]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [ 7.005306 -6.220007]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [4.4009476 8.781921 ]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [ 6.452033 12.473244]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [8.881748 2.395756]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [ 7.3033724 14.183835 ]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [9.483317 9.602758]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [5.565288 3.58634 ]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [2.164459 9.192405]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [6.4152956 3.8357644]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [5.99349   4.4962444]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [8.90809   2.5081704]
+(5.0, -0.0)
+(5.0, -0.0)
+new waypoint : [1.1825814 6.480339 ]
+(5.0, -0.0)

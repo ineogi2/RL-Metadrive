@@ -1,0 +1,143 @@
+2022-09-22 01:57:33,363 INFO    StreamThr :6694 [internal.py:wandb_internal():90] W&B internal server running at pid: 6694, started at: 2022-09-22 01:57:33.363642
+2022-09-22 01:57:33,365 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: status
+2022-09-22 01:57:33,366 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: status
+2022-09-22 01:57:33,367 DEBUG   SenderThread:6694 [sender.py:send():302] send: header
+2022-09-22 01:57:33,367 INFO    WriterThread:6694 [datastore.py:open_for_write():75] open: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/run-36zzh1ic.wandb
+2022-09-22 01:57:33,394 DEBUG   SenderThread:6694 [sender.py:send():302] send: run
+2022-09-22 01:57:34,382 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: check_version
+2022-09-22 01:57:34,392 INFO    SenderThread:6694 [dir_watcher.py:__init__():216] watching files in: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files
+2022-09-22 01:57:34,393 INFO    SenderThread:6694 [sender.py:_start_run_threads():913] run started: 36zzh1ic with start time 1663779453.361628
+2022-09-22 01:57:34,393 DEBUG   SenderThread:6694 [sender.py:send():302] send: summary
+2022-09-22 01:57:34,393 INFO    SenderThread:6694 [sender.py:_save_file():1156] saving file wandb-summary.json with policy end
+2022-09-22 01:57:34,394 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: check_version
+2022-09-22 01:57:34,442 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: run_start
+2022-09-22 01:57:34,447 DEBUG   HandlerThread:6694 [meta.py:__init__():35] meta init
+2022-09-22 01:57:34,447 DEBUG   HandlerThread:6694 [meta.py:__init__():50] meta init done
+2022-09-22 01:57:34,447 DEBUG   HandlerThread:6694 [meta.py:probe():216] probe
+2022-09-22 01:57:34,453 DEBUG   HandlerThread:6694 [meta.py:_setup_git():206] setup git
+2022-09-22 01:57:34,461 DEBUG   HandlerThread:6694 [meta.py:_setup_git():213] setup git done
+2022-09-22 01:57:34,461 DEBUG   HandlerThread:6694 [meta.py:_save_pip():54] save pip
+2022-09-22 01:57:34,462 DEBUG   HandlerThread:6694 [meta.py:_save_pip():68] save pip done
+2022-09-22 01:57:34,462 DEBUG   HandlerThread:6694 [meta.py:_save_conda():75] save conda
+2022-09-22 01:57:35,393 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_created():275] file/dir created: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/requirements.txt
+2022-09-22 01:57:35,393 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_created():275] file/dir created: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/conda-environment.yaml
+2022-09-22 01:57:35,393 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_created():275] file/dir created: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/wandb-summary.json
+2022-09-22 01:57:35,996 DEBUG   HandlerThread:6694 [meta.py:_save_conda():85] save conda done
+2022-09-22 01:57:35,996 DEBUG   HandlerThread:6694 [meta.py:probe():254] probe done
+2022-09-22 01:57:35,998 DEBUG   SenderThread:6694 [sender.py:send():302] send: files
+2022-09-22 01:57:35,998 INFO    SenderThread:6694 [sender.py:_save_file():1156] saving file wandb-metadata.json with policy now
+2022-09-22 01:57:36,002 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: stop_status
+2022-09-22 01:57:36,002 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: stop_status
+2022-09-22 01:57:36,222 DEBUG   SenderThread:6694 [sender.py:send():302] send: telemetry
+2022-09-22 01:57:36,392 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/conda-environment.yaml
+2022-09-22 01:57:36,392 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_created():275] file/dir created: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/wandb-metadata.json
+2022-09-22 01:57:36,646 INFO    Thread-16 :6694 [upload_job.py:push():138] Uploaded file /tmp/tmpbjvoxdp8wandb/36a6ng2h-wandb-metadata.json
+2022-09-22 01:57:41,393 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_created():275] file/dir created: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/output.log
+2022-09-22 01:57:43,394 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/output.log
+2022-09-22 01:57:45,394 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/output.log
+2022-09-22 01:57:45,721 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:45,721 DEBUG   SenderThread:6694 [sender.py:send():302] send: exit
+2022-09-22 01:57:45,721 INFO    SenderThread:6694 [sender.py:send_exit():438] handling exit code: 1
+2022-09-22 01:57:45,721 INFO    SenderThread:6694 [sender.py:send_exit():440] handling runtime: 11
+2022-09-22 01:57:45,721 INFO    SenderThread:6694 [sender.py:_save_file():1156] saving file wandb-summary.json with policy end
+2022-09-22 01:57:45,721 INFO    SenderThread:6694 [sender.py:send_exit():446] send defer
+2022-09-22 01:57:45,721 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:45,721 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: defer
+2022-09-22 01:57:45,721 INFO    HandlerThread:6694 [handler.py:handle_request_defer():164] handle defer: 0
+2022-09-22 01:57:45,722 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: defer
+2022-09-22 01:57:45,722 INFO    SenderThread:6694 [sender.py:send_request_defer():455] handle sender defer: 0
+2022-09-22 01:57:45,722 INFO    SenderThread:6694 [sender.py:transition_state():459] send defer: 1
+2022-09-22 01:57:45,722 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: defer
+2022-09-22 01:57:45,722 INFO    HandlerThread:6694 [handler.py:handle_request_defer():164] handle defer: 1
+2022-09-22 01:57:45,819 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: defer
+2022-09-22 01:57:45,820 INFO    SenderThread:6694 [sender.py:send_request_defer():455] handle sender defer: 1
+2022-09-22 01:57:45,820 INFO    SenderThread:6694 [sender.py:transition_state():459] send defer: 2
+2022-09-22 01:57:45,820 DEBUG   SenderThread:6694 [sender.py:send():302] send: stats
+2022-09-22 01:57:45,820 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: defer
+2022-09-22 01:57:45,820 INFO    HandlerThread:6694 [handler.py:handle_request_defer():164] handle defer: 2
+2022-09-22 01:57:45,820 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: defer
+2022-09-22 01:57:45,820 INFO    SenderThread:6694 [sender.py:send_request_defer():455] handle sender defer: 2
+2022-09-22 01:57:45,820 INFO    SenderThread:6694 [sender.py:transition_state():459] send defer: 3
+2022-09-22 01:57:45,820 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: defer
+2022-09-22 01:57:45,820 INFO    HandlerThread:6694 [handler.py:handle_request_defer():164] handle defer: 3
+2022-09-22 01:57:45,820 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: defer
+2022-09-22 01:57:45,820 INFO    SenderThread:6694 [sender.py:send_request_defer():455] handle sender defer: 3
+2022-09-22 01:57:45,820 INFO    SenderThread:6694 [sender.py:transition_state():459] send defer: 4
+2022-09-22 01:57:45,821 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: defer
+2022-09-22 01:57:45,821 INFO    HandlerThread:6694 [handler.py:handle_request_defer():164] handle defer: 4
+2022-09-22 01:57:45,821 DEBUG   SenderThread:6694 [sender.py:send():302] send: summary
+2022-09-22 01:57:45,821 INFO    SenderThread:6694 [sender.py:_save_file():1156] saving file wandb-summary.json with policy end
+2022-09-22 01:57:45,821 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: defer
+2022-09-22 01:57:45,821 INFO    SenderThread:6694 [sender.py:send_request_defer():455] handle sender defer: 4
+2022-09-22 01:57:45,821 INFO    SenderThread:6694 [sender.py:transition_state():459] send defer: 5
+2022-09-22 01:57:45,821 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: defer
+2022-09-22 01:57:45,821 INFO    HandlerThread:6694 [handler.py:handle_request_defer():164] handle defer: 5
+2022-09-22 01:57:45,822 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: defer
+2022-09-22 01:57:45,822 INFO    SenderThread:6694 [sender.py:send_request_defer():455] handle sender defer: 5
+2022-09-22 01:57:45,824 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:46,052 INFO    SenderThread:6694 [sender.py:transition_state():459] send defer: 6
+2022-09-22 01:57:46,052 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:46,053 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: defer
+2022-09-22 01:57:46,053 INFO    HandlerThread:6694 [handler.py:handle_request_defer():164] handle defer: 6
+2022-09-22 01:57:46,053 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: defer
+2022-09-22 01:57:46,054 INFO    SenderThread:6694 [sender.py:send_request_defer():455] handle sender defer: 6
+2022-09-22 01:57:46,155 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:46,395 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/wandb-summary.json
+2022-09-22 01:57:46,396 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/config.yaml
+2022-09-22 01:57:47,396 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/output.log
+2022-09-22 01:57:47,722 INFO    SenderThread:6694 [sender.py:transition_state():459] send defer: 7
+2022-09-22 01:57:47,722 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:47,723 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: defer
+2022-09-22 01:57:47,723 INFO    HandlerThread:6694 [handler.py:handle_request_defer():164] handle defer: 7
+2022-09-22 01:57:47,723 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: defer
+2022-09-22 01:57:47,723 INFO    SenderThread:6694 [sender.py:send_request_defer():455] handle sender defer: 7
+2022-09-22 01:57:47,724 INFO    SenderThread:6694 [dir_watcher.py:finish():362] shutting down directory watcher
+2022-09-22 01:57:47,825 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:48,396 INFO    Thread-12 :6694 [dir_watcher.py:_on_file_modified():292] file/dir modified: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/output.log
+2022-09-22 01:57:48,397 INFO    SenderThread:6694 [dir_watcher.py:finish():392] scan: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files
+2022-09-22 01:57:48,397 INFO    SenderThread:6694 [dir_watcher.py:finish():406] scan save: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/wandb-metadata.json wandb-metadata.json
+2022-09-22 01:57:48,397 INFO    SenderThread:6694 [dir_watcher.py:finish():406] scan save: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/conda-environment.yaml conda-environment.yaml
+2022-09-22 01:57:48,397 INFO    SenderThread:6694 [dir_watcher.py:finish():406] scan save: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/config.yaml config.yaml
+2022-09-22 01:57:48,397 INFO    SenderThread:6694 [dir_watcher.py:finish():406] scan save: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/wandb-summary.json wandb-summary.json
+2022-09-22 01:57:48,399 INFO    SenderThread:6694 [dir_watcher.py:finish():406] scan save: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/requirements.txt requirements.txt
+2022-09-22 01:57:48,401 INFO    SenderThread:6694 [dir_watcher.py:finish():406] scan save: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/output.log output.log
+2022-09-22 01:57:48,401 INFO    SenderThread:6694 [sender.py:transition_state():459] send defer: 8
+2022-09-22 01:57:48,401 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:48,402 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: defer
+2022-09-22 01:57:48,402 INFO    HandlerThread:6694 [handler.py:handle_request_defer():164] handle defer: 8
+2022-09-22 01:57:48,405 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: defer
+2022-09-22 01:57:48,405 INFO    SenderThread:6694 [sender.py:send_request_defer():455] handle sender defer: 8
+2022-09-22 01:57:48,407 INFO    SenderThread:6694 [file_pusher.py:finish():171] shutting down file pusher
+2022-09-22 01:57:48,506 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:48,507 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:48,609 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:48,609 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:48,715 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:48,718 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:48,821 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:48,822 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:48,924 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:48,925 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:49,027 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:49,027 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:49,117 INFO    Thread-19 :6694 [upload_job.py:push():138] Uploaded file /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/wandb-summary.json
+2022-09-22 01:57:49,127 INFO    Thread-21 :6694 [upload_job.py:push():138] Uploaded file /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/output.log
+2022-09-22 01:57:49,128 INFO    Thread-20 :6694 [upload_job.py:push():138] Uploaded file /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/requirements.txt
+2022-09-22 01:57:49,130 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:49,130 INFO    Thread-18 :6694 [upload_job.py:push():138] Uploaded file /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/config.yaml
+2022-09-22 01:57:49,130 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:49,131 INFO    Thread-17 :6694 [upload_job.py:push():138] Uploaded file /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/files/conda-environment.yaml
+2022-09-22 01:57:49,232 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:49,232 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: poll_exit
+2022-09-22 01:57:49,332 INFO    Thread-11 :6694 [sender.py:transition_state():459] send defer: 9
+2022-09-22 01:57:49,332 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: defer
+2022-09-22 01:57:49,332 INFO    HandlerThread:6694 [handler.py:handle_request_defer():164] handle defer: 9
+2022-09-22 01:57:49,332 DEBUG   SenderThread:6694 [sender.py:send_request():316] send_request: defer
+2022-09-22 01:57:49,332 INFO    SenderThread:6694 [sender.py:send_request_defer():455] handle sender defer: 9
+2022-09-22 01:57:49,333 DEBUG   HandlerThread:6694 [handler.py:handle_request():141] handle_request: poll_exit
+2022-09-22 01:57:50,382 WARNING StreamThr :6694 [internal.py:is_dead():387] Internal process exiting, parent pid 6683 disappeared
+2022-09-22 01:57:50,382 ERROR   StreamThr :6694 [internal.py:wandb_internal():149] Internal process shutdown.
+2022-09-22 01:57:50,822 INFO    WriterThread:6694 [datastore.py:close():279] close: /home/ineogi2/RL-Lab/CPO/torch/wandb/run-20220922_015733-36zzh1ic/run-36zzh1ic.wandb
+2022-09-22 01:57:51,336 INFO    HandlerThread:6694 [handler.py:finish():810] shutting down handler
+2022-09-22 01:57:55,281 INFO    MainThread:6694 [internal.py:handle_exit():80] Internal process exited
+2022-09-22 01:57:55,282 WARNING MsgRouterThr:6694 [router.py:message_loop():73] EOFError seen in message_loop

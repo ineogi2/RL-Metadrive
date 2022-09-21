@@ -27,7 +27,7 @@ from PID.PID_controller_v3 import PID_controller
 
 def train(main_args):
     algo_idx = 1
-    agent_name = '0919'
+    agent_name = '0922'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
     max_steps = 1000
@@ -67,14 +67,14 @@ def train(main_args):
     random.seed(seed)
 
     # env = Env(env_name, seed, max_ep_len)
-    env=SafeMetaDriveEnv(dict(use_render=False,
+    env=SafeMetaDriveEnv(dict(use_render=True,
                     random_lane_width=True,
                     random_lane_num=True,
                     start_seed=random.randint(0, 1000)))
     agent = Agent(env, device, args)
 
     # for wandb
-    wandb.init(project='[torch] CPO', entity='ineogi2', name='0919')
+    # wandb.init(project='[torch] CPO', entity='ineogi2', name='0922_relative_coordinate')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -86,7 +86,7 @@ def train(main_args):
             state = env.reset()
             _, _, done, info = env.step([0,0])
             controller = PID_controller(info)
-            waypoint = info['vehicle_position']
+            # waypoint = info['vehicle_position']
 
             time_step=0
             score = 0
@@ -102,13 +102,13 @@ def train(main_args):
                     state_tensor = torch.tensor(state, device=device, dtype=torch.float)
                     action_tensor = agent.getAction(state_tensor, is_train=True)
                     waypoint = action_tensor.detach().cpu().numpy()
-                    print(f"new waypoint : {waypoint}")
+                    # print(f"new waypoint : {waypoint}")
                     controller.update(info, waypoint); time_step=0
 
                 action = controller.lane_keeping()
                 next_state, reward, done, info = env.step(action)
 
-                controller.update(info, waypoint)
+                controller.update(info, waypoint=0)
                 cost = info['cost']
 
                 done = True if step >= max_ep_len else done
