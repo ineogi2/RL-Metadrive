@@ -74,7 +74,7 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    # wandb.init(project='[torch] CPO', entity='ineogi2', name='0922_relative_coordinate')
+    # wandb.init(project='[torch] CPO', entity='ineogi2', name='0922_2')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):

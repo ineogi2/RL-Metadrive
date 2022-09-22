@@ -76,7 +76,7 @@ class PID_controller:
         else:
             waypoint = self._process_waypoint(waypoint)
             self.waypoint = self.vehicle_pos + waypoint
-            print(f'new waypoint : {self.waypoint}')
+            # print(f'new waypoint : {self.waypoint}')
 
         self.lateral = self.waypoint - self.vehicle_pos
         self.lateral_distance = self.norm(self.lateral[0], self.lateral[1])
