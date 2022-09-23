@@ -74,7 +74,7 @@ class Agent:
         # self.action_bound_min = torch.tensor(env.action_space.low, device=device)
         # self.action_bound_max = torch.tensor(env.action_space.high, device=device)
         self.action_bound_min = torch.tensor(0, device=device)
-        self.action_bound_max = torch.tensor(10, device=device)
+        self.action_bound_max = torch.tensor(1, device=device)
 
         # declare value and policy
         args['state_dim'] = self.state_dim
@@ -106,6 +106,7 @@ class Agent:
         if is_train:
             noise = torch.randn(*mean.size(), device=self.device)
             action = self.unnormalizeAction(mean + noise*std)
+            action[1] -= 0.5
         else:
             action = self.unnormalizeAction(mean)
         # clipped_action = clip(action, self.action_bound_max, self.action_bound_min)

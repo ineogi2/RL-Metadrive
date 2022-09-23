@@ -1,0 +1,161 @@
+/home/ineogi2/RL-Lab/metadrive/metadrive/utils/config.py:213: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  if isinstance(value, (np.float32, np.float64, np.float)):
+/home/ineogi2/RL-Lab/metadrive/metadrive/utils/config.py:215: DeprecationWarning: `np.int` is a deprecated alias for the builtin `int`. To silence this warning, use `int` by itself. Doing this will not modify any behavior and is safe. When replacing `np.int`, you may wish to use e.g. `np.int64` or `np.int32` to specify the precision. If you wish to review your current use, check the release note link for additional information.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  if isinstance(value, (np.int, np.int32, np.int64, np.uint)):
+/home/ineogi2/RL-Lab/metadrive/metadrive/component/vehicle_module/lidar.py:111: DeprecationWarning: `np.bool` is a deprecated alias for the builtin `bool`. To silence this warning, use `bool` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.bool_` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  mask = np.zeros((self.num_lasers, ), dtype=np.bool)
+Arrived
+new waypoint : (7.148524358045391, 9.70025866894467)
+Step time over
+new waypoint : (10.75856905237659, 12.165637356023902)
+Arrived
+new waypoint : (9.930606376886269, 7.28259408126732)
+Step time over
+new waypoint : (0.331985130834922, -8.475335498259245)
+Step time over
+new waypoint : (8.981863020841924, 15.932566095395764)
+Arrived
+new waypoint : (9.605123204823837, 12.614064085688327)
+Step time over
+new waypoint : (11.92736901252256, 9.555145997789019)
+Step time over
+new waypoint : (20.07636278539527, 11.144760857965036)
+Step time over
+new waypoint : (27.95335593920662, 10.381096816986142)
+Arrived
+new waypoint : (9.669825678098153, 8.344141085387633)
+Step time over
+new waypoint : (10.143431363916235, 10.433740609500134)
+Arrived
+new waypoint : (6.9385720187804925, 12.076142076990585)
+Step time over
+new waypoint : (9.584756344819269, 14.489799805528484)
+Step time over
+new waypoint : (16.500499298789567, 15.177159613752636)
+Step time over
+new waypoint : (22.74891618318178, 8.790659242129628)
+Arrived
+new waypoint : (8.08641176515008, 12.141044137390915)
+Step time over
+new waypoint : (8.904539932217817, 9.00060654939252)
+Step time over
+new waypoint : (17.034601902299038, 10.843678890734056)
+Step time over
+new waypoint : (24.936150091950886, 12.253003149364371)
+Step time over
+new waypoint : (31.239239978215274, 13.696664508885481)
+Arrived
+new waypoint : (5.910321765549703, 4.475536046503742)
+Step time over
+new waypoint : (11.090857432259277, 10.278160611879281)
+Arrived
+new waypoint : (7.483531306438888, 10.777516458886328)
+Step time over
+new waypoint : (10.854463919658713, 12.0965900881965)
+Arrived
+new waypoint : (6.016268600639241, 4.97527557189086)
+Step time over
+new waypoint : (1.8542474787649565, -10.936207970709317)
+Arrived
+new waypoint : (9.19225122939245, 11.423426619895867)
+Step time over
+new waypoint : (9.050628966794156, -12.920369988881605)
+Arrived
+new waypoint : (9.72773144299163, 12.073110457631838)
+Step time over
+new waypoint : (12.041676930621625, 13.767842883865018)
+Step time over
+new waypoint : (18.12099760594169, 13.085708318565626)
+Step time over
+new waypoint : (20.2137126165399, -10.305042588956047)
+Arrived
+new waypoint : (9.356853901034118, 14.202777101086545)
+Step time over
+new waypoint : (10.662025010240255, 15.270924117949242)
+Step time over
+new waypoint : (18.311606283194507, 14.497304741414467)
+Step time over
+new waypoint : (23.21800251345566, 4.305323404948497)
+Arrived
+new waypoint : (9.813938389027328, 9.933890225355658)
+Step time over
+new waypoint : (11.629915809058035, 14.987792984702708)
+Step time over
+new waypoint : (18.292336571478582, 13.578703368653839)
+Step time over
+new waypoint : (24.93918157080213, 12.105327799443389)
+Step time over
+new waypoint : (34.42924937321227, 9.692270210161151)
+Step time over
+new waypoint : (39.7563949128239, 7.788624506259836)
+Arrived
+new waypoint : (8.807487004135293, 20.853451606389108)
+Step time over
+new waypoint : (10.573996303558944, 20.61939351114623)
+Step time over
+new waypoint : (17.024894278964343, 19.37278301474768)
+Step time over
+new waypoint : (24.11309281635291, 20.058274448472936)
+Step time over
+new waypoint : (32.40064035763677, 20.992966487312586)
+Arrived
+new waypoint : (5.8279200869536645, 7.898335201460717)
+Step time over
+new waypoint : (11.394521145423477, 10.988915990483807)
+Step time over
+new waypoint : (19.29885677492959, 12.360017768614679)
+Step time over
+new waypoint : (27.17878567944382, 13.060982045654695)
+Step time over
+new waypoint : (33.11164851908395, 10.408605483471277)
+Step time over
+new waypoint : (39.73239945523125, 6.869479400155537)
+Arrived
+new waypoint : (7.562931367904676, 17.061623915487875)
+Step time over
+new waypoint : (11.102795024704593, 0.009433491693812357)
+Step time over
+new waypoint : (24.657881690034074, 5.863096189116239)
+Arrived
+new waypoint : (2.2502287307080597, -11.482973036090273)
+Step time over
+new waypoint : (9.833165494745753, 11.460895953999994)
+Step time over
+new waypoint : (18.777639031986304, 1.1105423919652022)
+Arrived
+new waypoint : (9.346386890623652, -6.566788650632878)
+Step time over
+new waypoint : (10.460228019225395, 15.272642696860785)
+Step time over
+new waypoint : (17.948569383676627, 15.427880990637851)
+Step time over
+new waypoint : (26.87452469724879, 11.524314409655611)
+Step time over
+new waypoint : (34.22250666340936, 15.39171635999568)
+Step time over
+new waypoint : (40.477929207029156, 4.328919587289377)
+Arrived
+new waypoint : (41.34618563896978, 17.17668966819601)
+Step time over
+new waypoint : (49.98192488334192, 18.046932215229468)
+Arrived
+new waypoint : (9.436562770408472, 10.230016095697213)
+Step time over
+new waypoint : (10.806380342184328, 11.876662432784537)
+Arrived
+new waypoint : (8.273566865909373, 12.372073405604096)
+Step time over
+new waypoint : (11.629347224965802, 8.542941185265429)
+Arrived
+new waypoint : (8.979351991808539, -12.046831905898888)
+Step time over
+new waypoint : (9.327267557763802, 9.32877148158307)
+Step time over
+new waypoint : (19.055393740943632, -5.62561076301012)
+optimizing case : 1
+{'score': 12.635950126194771, 'cv': 1, 'value loss': array(13.814812, dtype=float32), 'cost value loss': array(0.03808431, dtype=float32), 'objective': array(4.8809114, dtype=float32), 'cost surrogate': array(2.0869894, dtype=float32), 'kl': array(8.531852e-12, dtype=float32), 'entropy': array(0.84876275, dtype=float32)}
+Arrived
+new waypoint : (9.080586894641415, 15.219414744116074)

@@ -23,11 +23,11 @@ sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 from metadrive import SafeMetaDriveEnv
 
 sys.path.append("/home/ineogi2/RL-Lab")
-from PID.PID_controller_v3 import PID_controller
+from PID.PID_controller_v4 import PID_controller
 
 def train(main_args):
     algo_idx = 1
-    agent_name = '0922'
+    agent_name = '0923-fixed'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
     max_steps = 1000
@@ -49,7 +49,7 @@ def train(main_args):
         'num_conjugate':10,
         'max_decay_num':10,
         'line_decay':0.8,
-        'max_kl':0.001,
+        'max_kl':0.01,
         'damping_coeff':0.01,
         'gae_coeff':0.97,
         'cost_d':1.0/1000.0,
@@ -74,7 +74,7 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    # wandb.init(project='[torch] CPO', entity='ineogi2', name='0922_2')
+    wandb.init(project='[torch] CPO', entity='ineogi2', name='0923_fixed')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -84,9 +84,9 @@ def train(main_args):
         cvs = []
         while ep_step < max_steps:
             state = env.reset()
+            print("\n")
             _, _, done, info = env.step([0,0])
             controller = PID_controller(info)
-            # waypoint = info['vehicle_position']
 
             time_step=0
             score = 0
@@ -97,15 +97,14 @@ def train(main_args):
                 time_step += 1
                 ep_step += 1
                 step += 1
-
-                if controller.is_arrived or time_step > 10:
+                if controller.is_arrived or time_step>20:
                     state_tensor = torch.tensor(state, device=device, dtype=torch.float)
                     action_tensor = agent.getAction(state_tensor, is_train=True)
                     waypoint = action_tensor.detach().cpu().numpy()
-                    # print(f"new waypoint : {waypoint}")
-                    controller.update(info, waypoint); time_step=0
+                    controller.update(info, waypoint=waypoint); time_step=0
 
                 action = controller.lane_keeping()
+                # print(f'waypoint : {controller.waypoint} / lateral error : {controller.lateral_error} / action : {action}')
                 next_state, reward, done, info = env.step(action)
 
                 controller.update(info, waypoint=0)

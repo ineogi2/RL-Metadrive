@@ -1,5 +1,5 @@
 import sys, random
-from PID_controller_v3 import PID_controller
+from PID_controller_v4 import PID_controller
 
 sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 
@@ -22,11 +22,11 @@ while not done:
         input = controller.lane_keeping()
 
         obs, reward, done, info = env.step(input)
-        controller._update(info,waypoint)
+        controller.update(info,[0,1])
         env.render()
 
     controller._reset(); print('\n')
     env.reset(); done=False; obs, reward, done, info = env.step([0,0])
-    controller._update(info)
+    controller.update(info,[0,1])
 
     ## density 업해서 다시
