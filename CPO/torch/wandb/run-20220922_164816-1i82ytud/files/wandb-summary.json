@@ -1,1 +1,0 @@
-{"score": 18.952130076792148, "cv": 1, "value loss": 16.204998016357422, "cost value loss": 0.004068429581820965, "objective": Infinity, "cost surrogate": -Infinity, "kl": 5.3400729171926287e-08, "entropy": -0.20205573737621307, "_timestamp": 1663833991.6315653, "_runtime": 1094.655017375946, "_step": 446, "_wandb": {"runtime": 1094}}
