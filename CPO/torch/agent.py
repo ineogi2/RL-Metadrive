@@ -105,8 +105,8 @@ class Agent:
         mean, log_std, std = self.policy(state)
         if is_train:
             noise = torch.randn(*mean.size(), device=self.device)
+            mean[1] -= 0.5
             action = self.unnormalizeAction(mean + noise*std)
-            action[1] -= 0.5
         else:
             action = self.unnormalizeAction(mean)
         # clipped_action = clip(action, self.action_bound_max, self.action_bound_min)

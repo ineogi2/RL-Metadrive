@@ -1,0 +1,24 @@
+{
+    "os": "Linux-5.15.0-46-generic-x86_64-with-glibc2.31",
+    "python": "3.9.12",
+    "heartbeatAt": "2022-09-25T17:35:39.752183",
+    "startedAt": "2022-09-25T17:35:39.067602",
+    "docker": null,
+    "gpu": "NVIDIA GeForce GTX 1660 Ti",
+    "gpu_count": 1,
+    "cpu_count": 12,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/home/ineogi2/RL-Lab/CPO/torch/main.py",
+    "codePath": "CPO/torch/main.py",
+    "git": {
+        "remote": "git@github.com:ineogi2/RL-Lab.git",
+        "commit": "29a740a8ac7db01b461f4d0afdcbda99d1616cd7"
+    },
+    "email": "ineogi2@gmail.com",
+    "root": "/home/ineogi2/RL-Lab",
+    "host": "legion-5-15imh05h",
+    "username": "ineogi2",
+    "executable": "/home/ineogi2/anaconda3/envs/rl/bin/python3"
+}
