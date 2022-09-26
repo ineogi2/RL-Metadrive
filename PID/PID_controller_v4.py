@@ -39,15 +39,15 @@ class PID_controller:
     def _get_lateral_error(self):
         if self.lateral_distance == 0: return 0
 
-        lateral = self._heading[0]*self.lateral[1] - self._heading[1]*self.lateral[0]
-        return lateral
+        lateral_error = -self._heading[0]*self.lateral[1] + self._heading[1]*self.lateral[0]
+        return lateral_error
 
     def _is_arrived(self):
         self.is_arrived = True if self.lateral_distance < 1 else False
 
     def _process_waypoint(self, waypoint):
         norm = self.norm(waypoint[0], waypoint[1])
-        delta_x = self.distance*waypoint[0]/norm        # normal vector direction
+        delta_x = self.clip(self.distance*waypoint[0]/norm, 0, self.distance)       # normal vector direction
         delta_y = (self.distance/5)*waypoint[1]/norm    # lateral direction
 
         x = (delta_x*self._heading[0], delta_x*self._heading[1])
@@ -81,7 +81,7 @@ class PID_controller:
         self.speed_err = self._update_err(self.speed_err, self.speed, self.speed_aim)
 
     def lane_keeping(self):
-        steering_angle = -0.7*self.lateral_error
+        steering_angle = 0.7*self.lateral_error
         acc = self._pid_result(self.speed_gain, self.speed_err)
         input = [np.clip(steering_angle,-0.8,0.8), acc]
         return input

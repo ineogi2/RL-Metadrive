@@ -1,5 +1,5 @@
 import sys, random
-from PID_controller_v3 import PID_controller
+from PID_controller_v4 import PID_controller
 
 sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 
@@ -12,27 +12,21 @@ env=SafeMetaDriveEnv(dict(use_render=True,
                     traffic_density=0.25,
                     start_seed=random.randint(0, 1000)))
 env.reset()
-
+waypoint = (0,0)
 obs, reward, done, info = env.step([0,0])
-# controller = PID_controller(info)
+controller = PID_controller(info)
 
 while not done:
     for _ in range(500):
-        # print(info["vehicle_position"])
-        # print(obs[19])
-        # if obs[19] < 0.4:
-        #     if controller.aim_lane_num == controller.cur_lane_num:
-        #         if info['vehicle_heading_sine'][1]>0: controller.go_left()
-        #         else: controller.go_right()
     
-        # input = controller.vehicle_control(0)
+        input = controller.lane_keeping()
 
-        obs, reward, done, info = env.step([1,0])
-        # controller._update(info)
+        obs, reward, done, info = env.step(input)
+        controller.update(info,[0,1])
         env.render()
 
-    # controller._reset(); print('\n')
+    controller._reset(); print('\n')
     env.reset(); done=False; obs, reward, done, info = env.step([0,0])
-    # controller._update(info)
+    controller.update(info,[0,1])
 
     ## density 업해서 다시

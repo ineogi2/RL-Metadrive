@@ -11,3 +11,4 @@ metadrive/metadrive/*
 # CPO
 CPO/*
 !CPO/torch
+CPO/torch/wandb
