@@ -27,7 +27,7 @@ from PID.PID_controller_v4 import PID_controller
 
 def train(main_args):
     algo_idx = 1
-    agent_name = '0926-fixed'
+    agent_name = '0926-pre-trained'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
     max_steps = 1000
@@ -74,7 +74,7 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    wandb.init(project='[torch] CPO', entity='ineogi2', name='0926-2')
+    wandb.init(project='[torch] CPO', entity='ineogi2', name='0926-after-pretrain')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):

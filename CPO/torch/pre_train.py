@@ -67,7 +67,7 @@ def train(main_args):
     random.seed(seed)
 
     # env = Env(env_name, seed, max_ep_len)
-    env=SafeMetaDriveEnv(dict(use_render=True,
+    env=SafeMetaDriveEnv(dict(use_render=False,
                     manual_control=True,
                     random_lane_width=True,
                     random_lane_num=True,
@@ -75,7 +75,7 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    wandb.init(project='[torch] CPO', entity='ineogi2', name='0926-pretrain')
+    wandb.init(project='[torch] CPO', entity='ineogi2', name='0926-pretrain-3')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -85,8 +85,11 @@ def train(main_args):
         cvs = []
         while ep_step < max_steps:
             state = env.reset()
+            env.vehicle.expert_takeover=True
+
             _, _, done, info = env.step([0,0])
-            controller = PID_controller(info)
+            waypoint = info["vehicle_position"]
+            # controller = PID_controller(info)
 
             time_step=0
             score = 0
@@ -97,19 +100,15 @@ def train(main_args):
                 time_step += 1
                 ep_step += 1
                 step += 1
-                # if controller.is_arrived or time_step>35:
-                #     state_tensor = torch.tensor(state, device=device, dtype=torch.float)
-                #     action_tensor = agent.getAction(state_tensor, is_train=True)
-                #     waypoint = action_tensor.detach().cpu().numpy()
-                #     controller.update(info, waypoint=waypoint); time_step=0
+                if time_step>25:
+                    waypoint = info['vehicle_position']
+                    # print(f"new waypoint : {waypoint}")
+                    time_step=0
 
-                # action = controller.lane_keeping()
-                # print(f'waypoint : {controller.waypoint} / lateral error : {controller.lateral_error} / action : {action[0]}')
                 next_state, reward, done, info = env.step([0,0])
 
                 # controller.update(info, waypoint=0)
                 cost = info['cost']
-                waypoint = info['vehicle_position']
                 done = True if step >= max_ep_len else done
                 fail = True if step < max_ep_len and done else False
                 trajectories.append([state, waypoint, reward, cost, done, fail, next_state])
@@ -131,8 +130,8 @@ def train(main_args):
         print(log_data)
         if main_args.graph: graph.update([score, objective, v_loss, kl, entropy])
         wandb.log(log_data)
-        # if (epoch + 1)%save_freq == 0:
-        agent.save()
+        if (epoch + 1)%save_freq == 0:
+            agent.save()
 
     if main_args.graph: graph.update(None, finished=True)
 
