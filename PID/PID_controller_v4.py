@@ -47,12 +47,12 @@ class PID_controller:
 
     def _process_waypoint(self, waypoint):
         norm = self.norm(waypoint[0], waypoint[1])
-        delta_x = self.clip(self.distance*waypoint[0]/norm, 0, self.distance)       # normal vector direction
+        delta_x = self.clip(self.distance*waypoint[0]/norm, self.distance/5, self.distance)       # normal vector direction
         delta_y = (self.distance/5)*waypoint[1]/norm    # lateral direction
 
         x = (delta_x*self._heading[0], delta_x*self._heading[1])
         y = (-delta_y*self._heading[1], delta_y*self._heading[0])
-        # print(delta_x, delta_y)
+        # print(self.vehicle_pos, x, y)
         return self.vehicle_pos+x+y
 
     # math tools
@@ -83,5 +83,5 @@ class PID_controller:
     def lane_keeping(self):
         steering_angle = 0.7*self.lateral_error
         acc = self._pid_result(self.speed_gain, self.speed_err)
-        input = [np.clip(steering_angle,-0.8,0.8), acc]
+        input = [np.clip(steering_angle,-0.6,0.6), acc]
         return input

@@ -27,7 +27,7 @@ from PID.PID_controller_v4 import PID_controller
 
 def train(main_args):
     algo_idx = 1
-    agent_name = '0926-pre-trained'
+    agent_name = '0927-pre-trained'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
     max_steps = 1000
@@ -74,7 +74,7 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    wandb.init(project='[torch] CPO', entity='ineogi2', name='0926-after-pretrain')
+    # wandb.init(project='[torch] CPO', entity='ineogi2', name='0927-after-learning')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -86,7 +86,7 @@ def train(main_args):
             state = env.reset()
             _, _, done, info = env.step([0,0])
             controller = PID_controller(info)
-
+            action = [0,0]
             time_step=0
             score = 0
             cv = 0
@@ -96,14 +96,19 @@ def train(main_args):
                 time_step += 1
                 ep_step += 1
                 step += 1
-                if controller.is_arrived or time_step>35:
+                print(f'waypoint : {controller.waypoint} / is arrived : {controller.is_arrived} / action : {action[0]}')
+
+                if controller.is_arrived or time_step > 10:
                     state_tensor = torch.tensor(state, device=device, dtype=torch.float)
                     action_tensor = agent.getAction(state_tensor, is_train=True)
                     waypoint = action_tensor.detach().cpu().numpy()
+                    # while waypoint[0]<=0:
+                    #     state_tensor = torch.tensor(state, device=device, dtype=torch.float)
+                    #     action_tensor = agent.getAction(state_tensor, is_train=True)
+                    #     waypoint = action_tensor.detach().cpu().numpy()
                     controller.update(info, waypoint=waypoint); time_step=0
 
                 action = controller.lane_keeping()
-                print(f'waypoint : {controller.waypoint} / lateral error : {controller.lateral_error} / action : {action[0]}')
                 next_state, reward, done, info = env.step(action)
 
                 controller.update(info, waypoint=0)
@@ -129,7 +134,7 @@ def train(main_args):
         log_data = {"score":score, 'cv':cv, "value loss":v_loss, "cost value loss":cost_v_loss, "objective":objective, "cost surrogate":cost_surrogate, "kl":kl, "entropy":entropy}
         print(log_data)
         if main_args.graph: graph.update([score, objective, v_loss, kl, entropy])
-        wandb.log(log_data)
+        # wandb.log(log_data)
         if (epoch + 1)%save_freq == 0:
             agent.save()
 
