@@ -69,12 +69,12 @@ class Agent:
 
         # constant about env
         self.state_dim = env.observation_space.shape[0]
-        # self.action_dim = env.action_space.shape[0]
-        self.action_dim = 2
-        # self.action_bound_min = torch.tensor(env.action_space.low, device=device)
-        # self.action_bound_max = torch.tensor(env.action_space.high, device=device)
-        self.action_bound_min = torch.tensor(0, device=device)
-        self.action_bound_max = torch.tensor(1, device=device)
+        self.action_dim = env.action_space.shape[0]
+        # self.action_dim = 2
+        self.action_bound_min = torch.tensor(env.action_space.low, device=device)
+        self.action_bound_max = torch.tensor(env.action_space.high, device=device)
+        # self.action_bound_min = torch.tensor(-1, device=device)
+        # self.action_bound_max = torch.tensor(1, device=device)
 
         # declare value and policy
         args['state_dim'] = self.state_dim
@@ -105,12 +105,12 @@ class Agent:
         mean, log_std, std = self.policy(state)
         if is_train:
             noise = torch.randn(*mean.size(), device=self.device)
-            mean[1] -= 0.5
+            # mean[1] -= 0.5
             action = self.unnormalizeAction(mean + noise*std)
         else:
             action = self.unnormalizeAction(mean)
-        # clipped_action = clip(action, self.action_bound_max, self.action_bound_min)
-        return action#, clipped_action
+        clipped_action = clip(action, self.action_bound_max, self.action_bound_min)
+        return action, clipped_action
 
     def getGaesTargets(self, rewards:np.ndarray, values:np.ndarray, dones:np.ndarray, fails:np.ndarray, next_values:np.ndarray) -> List[np.ndarray]:
         '''
@@ -158,8 +158,8 @@ class Agent:
         # convert to tensor
         states_tensor = torch.tensor(states, device=self.device, dtype=torch.float)
         actions_tensor = torch.tensor(actions, device=self.device, dtype=torch.float)
-        # norm_actions_tensor = self.normalizeAction(actions_tensor)
-        norm_actions_tensor = actions_tensor
+        norm_actions_tensor = self.normalizeAction(actions_tensor)
+        # norm_actions_tensor = actions_tensor
         next_states_tensor = torch.tensor(next_states, device=self.device, dtype=torch.float)
 
         # get GAEs and Tagets

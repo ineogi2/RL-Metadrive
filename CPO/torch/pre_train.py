@@ -26,8 +26,8 @@ sys.path.append("/home/ineogi2/RL-Lab")
 from PID.PID_controller_v4 import PID_controller
 
 def train(main_args):
-    algo_idx = 1
-    agent_name = '0927-pre-trained'
+    algo_idx = 0
+    agent_name = '0929-action-pretrain'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
     max_steps = 1000
@@ -55,7 +55,7 @@ def train(main_args):
         'cost_d':1.0/1000.0,
     }
     if torch.cuda.is_available():
-        device = torch.device('cuda:0')
+        device = torch.device('cuda')
         print('[torch] cuda is used.')
     else:
         device = torch.device('cpu')
@@ -75,7 +75,7 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    wandb.init(project='[torch] CPO', entity='ineogi2', name='0927-pretrain-1')
+    wandb.init(project='[torch] CPO', entity='ineogi2', name='0929-pretrain-0')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -88,8 +88,6 @@ def train(main_args):
             env.vehicle.expert_takeover=True
 
             _, _, done, info = env.step([0,0])
-            waypoint = info["vehicle_position"]
-            # controller = PID_controller(info)
 
             time_step=0
             score = 0
@@ -100,18 +98,17 @@ def train(main_args):
                 time_step += 1
                 ep_step += 1
                 step += 1
-                if time_step>25:
-                    waypoint = info['vehicle_position']
-                    # print(f"new waypoint : {waypoint}")
-                    time_step=0
 
                 next_state, reward, done, info = env.step([0,0])
 
-                # controller.update(info, waypoint=0)
+                steering_angle = env.vehicle.steering
+                acc = env.vehicle.throttle_brake
+                action = [steering_angle, acc]
+                
                 cost = info['cost']
                 done = True if step >= max_ep_len else done
                 fail = True if step < max_ep_len and done else False
-                trajectories.append([state, waypoint, reward, cost, done, fail, next_state])
+                trajectories.append([state, action, reward, cost, done, fail, next_state])
 
                 state = next_state
                 score += reward

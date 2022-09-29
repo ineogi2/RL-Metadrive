@@ -26,7 +26,7 @@ sys.path.append("/home/ineogi2/RL-Lab")
 from PID.PID_controller_v4 import PID_controller
 
 def train(main_args):
-    algo_idx = 1
+    algo_idx = 2
     agent_name = '0927-pre-trained'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
@@ -74,7 +74,7 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    # wandb.init(project='[torch] CPO', entity='ineogi2', name='0927-after-learning')
+    # wandb.init(project='[torch] CPO', entity='ineogi2', name='0927-after-traning-2')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
