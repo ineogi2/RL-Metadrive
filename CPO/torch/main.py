@@ -26,8 +26,8 @@ sys.path.append("/home/ineogi2/RL-Lab")
 from PID.PID_controller_v4 import PID_controller
 
 def train(main_args):
-    algo_idx = 2
-    agent_name = '0927-pre-trained'
+    algo_idx = 1
+    agent_name = '0929-action-pretrain'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
     max_steps = 1000
@@ -84,39 +84,46 @@ def train(main_args):
         cvs = []
         while ep_step < max_steps:
             state = env.reset()
-            _, _, done, info = env.step([0,0])
-            controller = PID_controller(info)
-            action = [0,0]
-            time_step=0
+            # _, _, done, info = env.step([0,0])
+            # controller = PID_controller(info)
+            # action = [0,0]
+            # time_step=0
             score = 0
             cv = 0
             step = 0
 
             while True:
-                time_step += 1
-                ep_step += 1
-                step += 1
-                print(f'waypoint : {controller.waypoint} / is arrived : {controller.is_arrived} / action : {action[0]}')
+                # time_step += 1
+                # ep_step += 1
+                # step += 1
+                # print(f'waypoint : {controller.waypoint} / is arrived : {controller.is_arrived} / action : {action[0]}')
 
-                if controller.is_arrived or time_step > 10:
-                    state_tensor = torch.tensor(state, device=device, dtype=torch.float)
-                    action_tensor = agent.getAction(state_tensor, is_train=True)
-                    waypoint = action_tensor.detach().cpu().numpy()
+                # if controller.is_arrived or time_step > 10:
+                #     state_tensor = torch.tensor(state, device=device, dtype=torch.float)
+                #     action_tensor = agent.getAction(state_tensor, is_train=True)
+                #     waypoint = action_tensor.detach().cpu().numpy()
                     # while waypoint[0]<=0:
                     #     state_tensor = torch.tensor(state, device=device, dtype=torch.float)
                     #     action_tensor = agent.getAction(state_tensor, is_train=True)
                     #     waypoint = action_tensor.detach().cpu().numpy()
-                    controller.update(info, waypoint=waypoint); time_step=0
+                    # controller.update(info, waypoint=waypoint); time_step=0
+                ep_step += 1
+                step += 1
+                state_tensor = torch.tensor(state, device=device, dtype=torch.float)
+                action_tensor, clipped_action_tensor = agent.getAction(state_tensor, is_train=True)
+                action = action_tensor.detach().cpu().numpy()
+                clipped_action = clipped_action_tensor.detach().cpu().numpy()
+                next_state, reward, done, info = env.step(clipped_action)
 
-                action = controller.lane_keeping()
-                next_state, reward, done, info = env.step(action)
+                # action = controller.lane_keeping()
+                # next_state, reward, done, info = env.step(action)
 
-                controller.update(info, waypoint=0)
+                # controller.update(info, waypoint=0)
                 cost = info['cost']
 
                 done = True if step >= max_ep_len else done
                 fail = True if step < max_ep_len and done else False
-                trajectories.append([state, waypoint, reward, cost, done, fail, next_state])
+                trajectories.append([state, action, reward, cost, done, fail, next_state])
 
                 state = next_state
                 score += reward
