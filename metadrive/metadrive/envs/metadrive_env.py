@@ -77,6 +77,8 @@ METADRIVE_DEFAULT_CONFIG = dict(
     crash_vehicle_cost=1.0,
     crash_object_cost=1.0,
     out_of_road_cost=1.0,
+    ######### added #########
+    on_broken_line=0.5,
 
     # ===== Termination Scheme =====
     out_of_route_done=False,
@@ -197,14 +199,20 @@ class MetaDriveEnv(BaseEnv):
     def cost_function(self, vehicle_id: str):
         vehicle = self.vehicles[vehicle_id]
         step_info = dict()
-        step_info["cost"] = 0; step_info["num_cv"] = 0
+        step_info["cost"] = 0; step_info["num_cv"] = 0; step_info["cost_reason"] = None
         if self._is_out_of_road(vehicle):
             step_info["cost"] = self.config["out_of_road_cost"]
+            step_info["cost_reason"] = "out_of_road_cost"
         elif vehicle.crash_vehicle:
             step_info["cost"] = self.config["crash_vehicle_cost"]
+            step_info["cost_reason"] = "crash_vehicle_cost"
         elif vehicle.crash_object:
             step_info["cost"] = self.config["crash_object_cost"]
+            step_info["cost_reason"] = "crash_object_cost"
         ############# added ############
+        elif vehicle.on_broken_line:
+            step_info["cost"] = self.config["on_broken_line"]
+            step_info["cost_reason"] = "on_broken_line"
         if step_info["cost"] > 0: step_info["num_cv"] += 1
         return step_info['cost'], step_info
 

@@ -22,15 +22,12 @@ import sys
 sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 from metadrive import SafeMetaDriveEnv
 
-sys.path.append("/home/ineogi2/RL-Lab")
-from PID.PID_controller_v4 import PID_controller
-
 def train(main_args):
     algo_idx = 0
-    agent_name = '0929-action-pretrain'
+    agent_name = '1003-action-pretrain'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
-    max_steps = 1000
+    max_episodes = 10
     epochs = 2500
     save_freq = 10
     algo = '{}_{}'.format(agent_name, algo_idx)
@@ -75,28 +72,24 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    wandb.init(project='[torch] CPO', entity='ineogi2', name='0929-pretrain-0')
+    wandb.init(project='[torch] CPO', entity='ineogi2', name='1003-pretrain-0')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
         trajectories = []
-        ep_step = 0
+        ep = 0
         scores = []
         cvs = []
-        while ep_step < max_steps:
-            state = env.reset()
-            env.vehicle.expert_takeover=True
-
-            _, _, done, info = env.step([0,0])
-
-            time_step=0
+        fails = 0
+        out_of_road = 0; crash_vehicle = 0; crash_object = 0; broken_line = 0
+        while ep < max_episodes:
+            state = env.reset(); env.vehicle.expert_takeover=True
+            ep += 1
             score = 0
             cv = 0
             step = 0
 
             while True:
-                time_step += 1
-                ep_step += 1
                 step += 1
 
                 next_state, reward, done, info = env.step([0,0])
@@ -106,6 +99,11 @@ def train(main_args):
                 action = [steering_angle, acc]
                 
                 cost = info['cost']
+                if info["cost_reason"] == "out_of_road_cost": out_of_road+=1;fails+=1
+                elif info["cost_reason"] == "crash_vehicle_cost": crash_vehicle+=1
+                elif info["cost_reason"] == "crash_object_cost": crash_object+=1
+                elif info["cost_reason"] == "on_broken_line": broken_line+=1
+
                 done = True if step >= max_ep_len else done
                 fail = True if step < max_ep_len and done else False
                 trajectories.append([state, action, reward, cost, done, fail, next_state])
@@ -123,7 +121,10 @@ def train(main_args):
         v_loss, cost_v_loss, objective, cost_surrogate, kl, entropy = agent.train(trajs=trajectories)
         score = np.mean(scores)
         cvs = np.mean(cvs)
-        log_data = {"score":score, 'cv':cv, "value loss":v_loss, "cost value loss":cost_v_loss, "objective":objective, "cost surrogate":cost_surrogate, "kl":kl, "entropy":entropy}
+        log_data = {"score":score, "out of road":out_of_road, "crash vehicle":crash_vehicle, 
+                    "crash object":crash_object, "broken line":broken_line, "success_rate (%)":100-100*fails/max_episodes,
+                    "cv":cvs, "value loss":v_loss, "cost value loss":cost_v_loss, 
+                    "objective":objective, "cost surrogate":cost_surrogate, "kl":kl, "entropy":entropy}
         print(log_data)
         if main_args.graph: graph.update([score, objective, v_loss, kl, entropy])
         wandb.log(log_data)
