@@ -71,7 +71,7 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    wandb.init(project='[torch] CPO', entity='ineogi2', name='1003-action-train-1')
+    # wandb.init(project='[torch] CPO', entity='ineogi2', name='1003-action-train-1')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -120,7 +120,7 @@ def train(main_args):
         score = np.mean(scores)
         cvs = np.mean(cvs)
         log_data = {"score":score, "out of road":out_of_road, "crash vehicle":crash_vehicle, 
-                    "crash object":crash_object, "broken line":broken_line,
+                    "crash object":crash_object, "broken line":broken_line, "success_rate (%)":100-100*fails/max_episodes,
                     "cv":cvs, "value loss":v_loss, "cost value loss":cost_v_loss, 
                     "objective":objective, "cost surrogate":cost_surrogate, "kl":kl, "entropy":entropy}
         print(log_data)

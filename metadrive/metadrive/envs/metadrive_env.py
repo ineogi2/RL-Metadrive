@@ -199,7 +199,8 @@ class MetaDriveEnv(BaseEnv):
     def cost_function(self, vehicle_id: str):
         vehicle = self.vehicles[vehicle_id]
         step_info = dict()
-        step_info["cost"] = 0; step_info["num_cv"] = 0; step_info["cost_reason"] = None
+        step_info["cost"] = 0; step_info["num_cv"] = 0
+        step_info["cost_reason"] = None
         if self._is_out_of_road(vehicle):
             step_info["cost"] = self.config["out_of_road_cost"]
             step_info["cost_reason"] = "out_of_road_cost"
