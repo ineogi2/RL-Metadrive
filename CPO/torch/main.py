@@ -23,7 +23,7 @@ sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 from metadrive import SafeMetaDriveEnv
 
 def train(main_args):
-    algo_idx = 0
+    algo_idx = 1
     agent_name = '1003-action-pretrain'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
@@ -71,7 +71,7 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    # wandb.init(project='[torch] CPO', entity='ineogi2', name='0927-after-traning-2')
+    # wandb.init(project='[torch] CPO', entity='ineogi2', name='1005-broken-cost-3')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
