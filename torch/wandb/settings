@@ -1,0 +1,5 @@
+[default]
+entity = ineogi2
+project = [torch] CPO
+base_url = https://api.wandb.ai
+
