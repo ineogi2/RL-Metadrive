@@ -23,8 +23,8 @@ sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 from metadrive import SafeMetaDriveEnv
 
 def train(main_args):
-    algo_idx = 0
-    agent_name = '1008-action-pretrain'
+    algo_idx = 1
+    agent_name = '1018'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
     max_episodes = 10
