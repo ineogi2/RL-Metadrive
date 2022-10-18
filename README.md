@@ -14,4 +14,7 @@
 * continuous한 output을 내던 policy 수정해서 discrete한 output, 즉 decision making만 하도록 수정
 * 학습 진행해 본 결과 성능이 굉장히 떨어짐. PID controller를 수정할 필요가 있음.
 
-
+### 2022.10 ~ : <Behavior cloning>
+* raw한 action 학습에 앞서 behavior cloning 후 학습을 진행한 결과 기존의 PID보다 성능이 잘 나옴
+* Broken line에 대한 cost가 없어 이를 추가한 뒤 학습을 진행 
+  -> 차선을 일정 스텝 이상 동안 넘었을 때만 cost가 있도록 수정

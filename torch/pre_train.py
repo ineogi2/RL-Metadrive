@@ -1,22 +1,12 @@
 from logger import Logger
 from agent import Agent
 from graph import Graph
-from env import Env
 
-from sklearn.utils import shuffle
-from collections import deque
-from scipy.stats import norm
-from copy import deepcopy
 import numpy as np
-# import safety_gym
 import argparse
-import pickle
 import random
 import torch
 import wandb
-import copy
-import time
-import gym
 import sys
 
 sys.path.append("/home/ineogi2/RL-Lab/metadrive")
@@ -24,11 +14,11 @@ from metadrive import SafeMetaDriveEnv
 
 def train(main_args):
     algo_idx = 0
-    agent_name = '1009-brokenline-0.2'
+    agent_name = '1018-pretrain'
     env_name = "Safe-metadrive-env"
-    max_ep_len = 500
+    max_ep_len = 300
     max_episodes = 10
-    epochs = 2500
+    epochs = 1000
     save_freq = 10
     algo = '{}_{}'.format(agent_name, algo_idx)
     save_name = '_'.join(env_name.split('-')[:-1])
@@ -49,7 +39,7 @@ def train(main_args):
         'max_kl':0.01,
         'damping_coeff':0.01,
         'gae_coeff':0.97,
-        'cost_d':1.0/1000.0,
+        'cost_d':10.0/1000.0,
     }
     if torch.cuda.is_available():
         device = torch.device('cuda')
@@ -72,7 +62,7 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    wandb.init(project='[torch] CPO', entity='ineogi2', name='1009-pretrain-0')
+    wandb.init(project='[torch] CPO', entity='ineogi2', name='1018-pretrain')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -88,21 +78,26 @@ def train(main_args):
             score = 0
             cv = 0
             step = 0
+            broken_step = 0
 
             while True:
                 step += 1
+                state_tensor = torch.tensor(state, device=device, dtype=torch.float)
+                action_tensor, clipped_action_tensor = agent.getAction(state_tensor, is_train=True)
+                action = action_tensor.detach().cpu().numpy()
+                clipped_action = clipped_action_tensor.detach().cpu().numpy()
+                next_state, reward, done, info = env.step(clipped_action)
 
-                next_state, reward, done, info = env.step([0,0])
-
-                steering_angle = env.vehicle.steering
-                acc = env.vehicle.throttle_brake
-                action = [steering_angle, acc]
-                
                 cost = info['cost']
-                if info["cost_reason"] == "out_of_road_cost": out_of_road+=1;fails+=1
-                elif info["cost_reason"] == "crash_vehicle_cost": crash_vehicle+=1
-                elif info["cost_reason"] == "crash_object_cost": crash_object+=1
-                elif info["cost_reason"] == "on_broken_line": broken_line+=1
+                if info["cost_reason"] == "out_of_road_cost": out_of_road+=1; fails+=1; broken_step = 0
+                elif info["cost_reason"] == "crash_vehicle_cost": crash_vehicle+=1; broken_step = 0
+                elif info["cost_reason"] == "crash_object_cost": crash_object+=1; broken_step = 0
+                elif info["cost_reason"] == "on_broken_line":
+                    if broken_step < 10:
+                        broken_step+=1
+                        cost = 0
+                    else:
+                        broken_line+=1
 
                 done = True if step >= max_ep_len else done
                 fail = True if step < max_ep_len and done else False

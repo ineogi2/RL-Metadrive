@@ -78,7 +78,7 @@ METADRIVE_DEFAULT_CONFIG = dict(
     crash_object_cost=1.0,
     out_of_road_cost=1.0,
     ######### added #########
-    on_broken_line=0.2,
+    on_broken_line=0.5,
 
     # ===== Termination Scheme =====
     out_of_route_done=False,
