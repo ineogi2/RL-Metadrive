@@ -62,6 +62,7 @@ for Kp in Kp_list:
                 steering = steering_control(cur_err, prv_err, err_sum, dt, Kp, Ki, Kd)
                 # print("acc : ",acc)
                 obs, reward, done, info = env.step([steering,0.1])
+                # steering 1 = 왼쪽 / -1 = 오른쪽
 
                 prv_time = cur_time
                 prv_err = cur_err

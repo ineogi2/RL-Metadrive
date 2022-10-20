@@ -96,7 +96,7 @@ def train(main_args):
                 action = action_tensor.detach().cpu().numpy()
                 clipped_action = clipped_action_tensor.detach().cpu().numpy()
                 next_state, reward, done, info = env.step(clipped_action)
-
+            
                 cost = info['cost']
                 if info["cost_reason"] == "out_of_road_cost": out_of_road+=1; fails+=1
                 elif info["cost_reason"] == "crash_vehicle_cost": crash_vehicle+=1
