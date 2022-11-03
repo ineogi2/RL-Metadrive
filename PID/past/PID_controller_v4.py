@@ -62,7 +62,7 @@ class PID_controller:
     def clip(self, a, low, high):
         return min(max(a, low), high)
 
-# --------------------inner only--------------------
+# -----------------------------------------------------
 
     def update(self, info, waypoint):
         self.speed = info['vehicle_speed']
