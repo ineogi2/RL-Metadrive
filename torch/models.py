@@ -24,9 +24,11 @@ class Policy(nn.Module):
         self.action_dim = args['action_dim']
         self.hidden1_units = args['hidden1']
         self.hidden2_units = args['hidden2']
+        # self.hidden3_units = args['hidden3']
 
         self.fc1 = nn.Linear(self.state_dim, self.hidden1_units)
         self.fc2 = nn.Linear(self.hidden1_units, self.hidden2_units)
+        # self.fc3 = nn.Linear(self.hidden2_units, self.hidden3_units)
         self.act_fn = torch.relu
         self.output_act_fn = torch.sigmoid
 
@@ -37,6 +39,7 @@ class Policy(nn.Module):
     def forward(self, x):
         x = self.act_fn(self.fc1(x))
         x = self.act_fn(self.fc2(x))
+        # x = self.act_fn(self.fc3(x))
         mean = self.output_act_fn(self.fc_mean(x))
         log_std = self.fc_log_std(x)
 

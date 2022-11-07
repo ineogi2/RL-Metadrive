@@ -14,7 +14,7 @@ from metadrive import SafeMetaDriveEnv
 
 def train(main_args):
     algo_idx = 0
-    agent_name = '1018-pretrain'
+    agent_name = '1104-pretrain'
     env_name = "Safe-metadrive-env"
     max_ep_len = 300
     max_episodes = 10
@@ -62,7 +62,7 @@ def train(main_args):
     agent = Agent(env, device, args)
 
     # for wandb
-    wandb.init(project='[torch] CPO', entity='ineogi2', name='1018-pretrain')
+    wandb.init(project='[torch] CPO', entity='ineogi2', name='1104-pretrain')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -116,11 +116,12 @@ def train(main_args):
         v_loss, cost_v_loss, objective, cost_surrogate, kl, entropy = agent.train(trajs=trajectories)
         score = np.mean(scores)
         cvs = np.mean(cvs)
-        log_data = {"score":score, "out of road":out_of_road, "crash vehicle":crash_vehicle, 
-                    "crash object":crash_object, "broken line":broken_line, "success_rate (%)":100-100*fails/max_episodes,
+        log_data = {"score":score, "out of road":min(out_of_road,10), "crash vehicle":crash_vehicle, 
+                    "crash object":crash_object, "broken line":broken_line, "success_rate (%)":max(100-100*fails/max_episodes,0),
                     "cv":cvs, "value loss":v_loss, "cost value loss":cost_v_loss, 
                     "objective":objective, "cost surrogate":cost_surrogate, "kl":kl, "entropy":entropy}
-        print(log_data)
+        print(f'epoch : {epoch+1}')
+        print(log_data, '\n')
         if main_args.graph: graph.update([score, objective, v_loss, kl, entropy])
         wandb.log(log_data)
         if (epoch + 1)%save_freq == 0:
