@@ -21,15 +21,7 @@ class Controller():
         self._current_yaw = state._current_yaw
         self._current_speed = state._current_speed
 
-        # if len(self.waypoints) == 0:
-        #     self.waypoints.append(np.array([self._current_x, self._current_y]))
-
     def _update_waypoints(self, state):
-        # new_waypoint = state._waypoints
-        # for i in range(self.num_waypoints):
-        #     if (self.waypoints[i] == new_waypoint).all():
-        #         return
-        # self.waypoints.append(new_waypoint)
         self.waypoints = state._waypoints
         self.min_dist = state._min_dist
 
@@ -87,10 +79,7 @@ class Controller():
         else:
             crosstrack_error = - abs(crosstrack_error)
 
-        yaw_diff_crosstrack = np.arctan(k_e * crosstrack_error / (k_v + np.log(v)))
-
-        # print(np.rad2deg(yaw_path), np.rad2deg(yaw), np.rad2deg(yaw_diff_crosstrack))
-        # print(self.min_dist)
+        yaw_diff_crosstrack = np.arctan(k_e * crosstrack_error / (k_v + np.log(v+1)))
 
         # 3. control low
         steer_expect = yaw_diff + yaw_diff_crosstrack
@@ -109,31 +98,30 @@ class Controller():
         # Clamp the steering command to valid bounds
         self.steer = np.fmax(np.fmin(input_steer, 1.0), -1.0)
 
-
 class State():
-    def __init__(self, waypoints):
+    def __init__(self):
         self._current_x = 0
         self._current_y = 0
         self._current_yaw = 0
         self._current_speed = 0
         self._waypoints = np.array([])
         self._heading = [0,0]
-        self._all_waypoints = waypoints
         self._min_idx = 0
         self._min_dist = 0
 
-    def _update_waypoints(self):
+    def _update_waypoints(self, action):
         now = np.array([self._current_x, self._current_y])
-        self._min_dist = norm_sq(now, self._all_waypoints[self._min_idx])
+        waypoints = [now]
+        dist = np.array(action[:5])
+        degree = np.array(action[5:])
 
-        for idx in range(max(self._min_idx-10, 0), min(len(self._all_waypoints), self._min_idx+10)):
-            way = self._all_waypoints[idx]
-            dist = norm_sq(way, now)
-            if dist < self._min_dist:
-                self._min_idx = idx
-                self._min_dist = dist
+        for i in range(len(action)//2):
+            waypoints.append(return_pos(waypoints[-1], dist[i], degree[i]))
 
-    def state_update(self, info):
+        self._waypoints = np.array(waypoints[1:])
+        self._min_dist = norm_sq(now, self._waypoints[0])
+
+    def state_update(self, info, action):
         xy = info['vehicle_position']
 
         self._heading = info['vehicle_heading']
@@ -141,12 +129,56 @@ class State():
         self._current_y = -xy[1]
         self._current_speed = info['vehicle_speed']
         self._current_yaw = np.arctan2(-self._heading[1], self._heading[0])
-        self._update_waypoints()
-        self._waypoints = np.array(self._all_waypoints[self._min_idx:min(self._min_idx+10, len(self._all_waypoints)), :])
+        self._update_waypoints(action)
 
     def __str__(self) -> str:
         return f"xy : {(self._current_x, self._current_y)} / speed : {self._current_speed} / " \
             + f"yaw : {self._current_yaw} / waypoint : {(self._waypoints[0][0], self._waypoints[0][1])}"
 
+
+
+# class State():
+#     def __init__(self, waypoints):
+#         self._current_x = 0
+#         self._current_y = 0
+#         self._current_yaw = 0
+#         self._current_speed = 0
+#         self._waypoints = np.array([])
+#         self._heading = [0,0]
+#         self._all_waypoints = waypoints
+#         self._min_idx = 0
+#         self._min_dist = 0
+
+#     def _update_waypoints(self):
+#         now = np.array([self._current_x, self._current_y])
+#         self._min_dist = norm_sq(now, self._all_waypoints[self._min_idx])
+
+#         for idx in range(max(self._min_idx-10, 0), min(len(self._all_waypoints), self._min_idx+10)):
+#             way = self._all_waypoints[idx]
+#             dist = norm_sq(way, now)
+#             if dist < self._min_dist:
+#                 self._min_idx = idx
+#                 self._min_dist = dist
+
+#     def state_update(self, info):
+#         xy = info['vehicle_position']
+
+#         self._heading = info['vehicle_heading']
+#         self._current_x = xy[0]
+#         self._current_y = -xy[1]
+#         self._current_speed = info['vehicle_speed']
+#         self._current_yaw = np.arctan2(-self._heading[1], self._heading[0])
+#         self._update_waypoints()
+#         self._waypoints = np.array(self._all_waypoints[self._min_idx:min(self._min_idx+10, len(self._all_waypoints)), :])
+
+#     def __str__(self) -> str:
+#         return f"xy : {(self._current_x, self._current_y)} / speed : {self._current_speed} / " \
+#             + f"yaw : {self._current_yaw} / waypoint : {(self._waypoints[0][0], self._waypoints[0][1])}"
+
 def norm_sq(pt1, pt2):
     return (pt1[0]-pt2[0])**2 + (pt1[1]-pt2[1])**2
+
+def return_pos(pos, dist, degree):
+    dx = dist*np.cos(degree)
+    dy = dist*np.sin(degree)
+    return [pos[0]+dx, pos[1]+dy]
