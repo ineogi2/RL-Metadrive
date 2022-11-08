@@ -1,5 +1,5 @@
 from logger import Logger
-from agent_waypoint import Agent
+from way_agent import Agent
 from graph import Graph
 from env import Env
 
@@ -32,18 +32,22 @@ def norm(pt1, pt2):
 def yaw(pt1, pt2):
     return np.arctan2(pt2[1]-pt1[1], pt2[0]-pt1[0])
 
-def waypoint_preprocessing(positions):
+def waypoint_to_action_space(positions, heading):
     dist = deque()
     degree = deque()
     for i in range(len(positions)-1):
         dist.append(norm(positions[i], positions[i+1]))
-        degree.append(yaw(positions[i], positions[i+1]))
+        d = yaw(positions[i], positions[i+1])-heading[i]
+        if d > np.pi:
+            d -= 2 * np.pi
+        if d < - np.pi:
+            d += 2 * np.pi
+        degree.append(d)
     return dist+degree
 
-
 def train(main_args):
-    algo_idx = 1
-    agent_name = '1107'
+    algo_idx = 2
+    agent_name = '1109'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
     max_episodes = 10
@@ -83,8 +87,8 @@ def train(main_args):
     random.seed(seed)
 
     # env = Env(env_name, seed, max_ep_len)
-    env=SafeMetaDriveEnv(dict(use_render=False,
-                    manual_control=True,
+    env=SafeMetaDriveEnv(dict(use_render=True,
+                    # manual_control=True,
                     random_lane_width=True,
                     random_lane_num=True,
                     start_seed=random.randint(0, 1000)))
@@ -94,7 +98,7 @@ def train(main_args):
     controller = Controller()
 
     # for wandb
-    wandb.init(project='[torch] CPO', entity='ineogi2', name='1107-new-waypoint-pretrain')
+    # wandb.init(project='[torch] CPO', entity='ineogi2', name='1107-new-waypoint-pretrain')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -104,17 +108,22 @@ def train(main_args):
         cvs = []
         fails = 0
         out_of_road = 0; crash_vehicle = 0; crash_object = 0; broken_line = 0
+
         while ep < max_episodes:
             state = env.reset()
             controller.reset()
-            env.vehicle.expert_takeover=True
+            # env.vehicle.expert_takeover=True
+
             ep += 1
             score = 0
             cv = 0
             step = 0
+            broken_step = 0
+
             waypoint_num = 5
             state_deque = deque(maxlen=waypoint_num+1)
             position_deque = deque(maxlen=waypoint_num+1)
+            heading_deque = deque(maxlen=waypoint_num+1)
             reward_deque = deque(maxlen=waypoint_num+1)
             cost_deque = deque(maxlen=waypoint_num+1)
             done_deque = deque(maxlen=waypoint_num+1)
@@ -125,10 +134,10 @@ def train(main_args):
                 step += 1
                 state_tensor = torch.tensor(state, device=device, dtype=torch.float)
                 action_tensor = agent.getAction(state_tensor, is_train=True)
-                action = action_tensor.detach().cpu().numpy()
-                # print(action)
+                waypoints = action_tensor.detach().cpu().numpy()
+                print(waypoints)
 
-                state_controller.state_update(info, action)
+                state_controller.state_update(info, waypoints)
                 # print(str(state_controller))
                 controller.update_all(state_controller)
                 controller.update_controls()
@@ -140,10 +149,20 @@ def train(main_args):
 
 
                 cost = info['cost']
-                if info["cost_reason"] == "out_of_road_cost": out_of_road+=1; fails+=1
-                elif info["cost_reason"] == "crash_vehicle_cost": crash_vehicle+=1
-                elif info["cost_reason"] == "crash_object_cost": crash_object+=1
-                elif info["cost_reason"] == "on_broken_line": broken_line+=1
+                if cost == 0:
+                    broken_step = 0
+                else:
+                    if info["cost_reason"] == "out_of_road_cost": out_of_road+=1; fails+=1; broken_step = 0
+                    elif info["cost_reason"] == "crash_vehicle_cost": crash_vehicle+=1; broken_step = 0
+                    elif info["cost_reason"] == "crash_object_cost": crash_object+=1; broken_step = 0
+                    elif info["cost_reason"] == "on_broken_line":
+                        if broken_step < 20:
+                            broken_step+=1
+                            cost = 0
+                        else:
+                            broken_line+=1
+                            reward -= cost
+                            cost = 0
 
                 done = True if step >= max_ep_len else done
                 fail = True if step < max_ep_len and done else False
@@ -152,13 +171,15 @@ def train(main_args):
                 if step%3==1:
                     state_deque.append(state)
                     position_deque.append([info["vehicle_position"][0], -info["vehicle_position"][1]])
+                    heading_deque.append(np.arctan2(-info['vehicle_heading'][1], info['vehicle_heading'][0]))
                     reward_deque.append(reward)
                     cost_deque.append(cost)
                     done_deque.append(done)
                     fail_deque.append(fail)
 
                 if len(position_deque) == waypoint_num+1:
-                    train_action = waypoint_preprocessing(position_deque)
+                    train_action = waypoint_to_action_space(position_deque, heading_deque)
+                    print("train action : ", train_action)
                     trajectories.append([state_deque[0], train_action, reward_deque[0],
                                     cost_deque[0], done_deque[0], fail_deque[0], state_deque[1]])
                     position_deque.popleft()
@@ -180,9 +201,10 @@ def train(main_args):
                     "crash object":crash_object, "broken line":broken_line, "success_rate (%)":100-100*fails/max_episodes,
                     "cv":cvs, "value loss":v_loss, "cost value loss":cost_v_loss, 
                     "objective":objective, "cost surrogate":cost_surrogate, "kl":kl, "entropy":entropy}
-        print(log_data)
+        print(f'epoch : {epoch+1}')
+        print(log_data,"\n")
         if main_args.graph: graph.update([score, objective, v_loss, kl, entropy])
-        wandb.log(log_data)
+        # wandb.log(log_data)
         if (epoch + 1)%save_freq == 0:
             agent.save()
 

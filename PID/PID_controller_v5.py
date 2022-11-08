@@ -112,16 +112,19 @@ class State():
     def _update_waypoints(self, action):
         now = np.array([self._current_x, self._current_y])
         waypoints = [now]
+        yaws = [self._current_yaw]
         dist = np.array(action[:5])
         degree = np.array(action[5:])
 
         for i in range(len(action)//2):
-            waypoints.append(return_pos(waypoints[-1], dist[i], degree[i]))
+            waypoint, deg = return_pos(waypoints[-1], yaws[-1],dist[i], degree[i])
+            waypoints.append(waypoint)
+            yaws.append(deg)
 
         self._waypoints = np.array(waypoints[1:])
         self._min_dist = norm_sq(now, self._waypoints[0])
 
-    def state_update(self, info, action):
+    def state_update(self, info, waypoints):
         xy = info['vehicle_position']
 
         self._heading = info['vehicle_heading']
@@ -129,7 +132,7 @@ class State():
         self._current_y = -xy[1]
         self._current_speed = info['vehicle_speed']
         self._current_yaw = np.arctan2(-self._heading[1], self._heading[0])
-        self._update_waypoints(action)
+        self._update_waypoints(waypoints)
 
     def __str__(self) -> str:
         return f"xy : {(self._current_x, self._current_y)} / speed : {self._current_speed} / " \
@@ -178,7 +181,13 @@ class State():
 def norm_sq(pt1, pt2):
     return (pt1[0]-pt2[0])**2 + (pt1[1]-pt2[1])**2
 
-def return_pos(pos, dist, degree):
-    dx = dist*np.cos(degree)
-    dy = dist*np.sin(degree)
-    return [pos[0]+dx, pos[1]+dy]
+def return_pos(current_pos, current_yaw, dist, degree):
+    deg = current_yaw+degree
+    if deg > np.pi:
+        deg -= 2 * np.pi
+    if deg < - np.pi:
+        deg += 2 * np.pi
+    
+    dx = dist*np.cos(deg)
+    dy = dist*np.sin(deg)
+    return [current_pos[0]+dx, current_pos[1]+dy], deg
