@@ -26,33 +26,21 @@ class Policy(nn.Module):
         self.hidden1_units = args['hidden1']
         self.hidden2_units = args['hidden2']
 
-        self.dist1 = nn.Linear(self.state_dim, self.hidden1_units//2)
-        self.dist2 = nn.Linear(self.hidden1_units//2, self.hidden2_units//2)
-        self.yaw1 = nn.Linear(self.state_dim, self.hidden1_units//2)
-        self.yaw2 = nn.Linear(self.hidden1_units//2, self.hidden2_units//2)
+        self.fc1 = nn.Linear(self.state_dim, self.hidden1_units)
+        self.fc2 = nn.Linear(self.hidden1_units, self.hidden2_units)
 
         self.act_fn = torch.relu
-        self.dist_act_fn = torch.sigmoid
-        self.yaw_act_fn = torch.sigmoid
+        self.output_act_fn = torch.sigmoid
 
-        self.dist_mean = nn.Linear(self.hidden2_units//2, self.action_dim//2)
-        self.yaw_mean = nn.Linear(self.hidden2_units//2, self.action_dim//2)
+        self.fc_mean = nn.Linear(self.hidden2_units, self.action_dim)
         self.fc_log_std = nn.Linear(self.hidden2_units, self.action_dim)
 
 
     def forward(self, x):
-        dist = self.act_fn(self.dist1(x))
-        dist = self.act_fn(self.dist2(dist))
+        x = self.act_fn(self.fc1(x))
+        x = self.act_fn(self.fc2(x))
 
-        yaw = self.act_fn(self.yaw1(x))
-        yaw = self.act_fn(self.yaw2(yaw))
-
-        x = torch.cat((dist, yaw), -1)
-
-        dist = self.dist_act_fn(self.dist_mean(dist))
-        yaw = self.yaw_act_fn(self.yaw_mean(yaw))*2 - 1
-        mean = torch.cat((dist, yaw), -1)
-
+        mean = self.output_act_fn(self.fc_mean(x))
         log_std = self.fc_log_std(x)
 
         log_std = torch.clamp(log_std, min=LOG_STD_MIN, max=LOG_STD_MAX)

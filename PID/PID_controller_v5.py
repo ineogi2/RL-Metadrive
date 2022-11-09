@@ -181,13 +181,13 @@ class State():
 def norm_sq(pt1, pt2):
     return (pt1[0]-pt2[0])**2 + (pt1[1]-pt2[1])**2
 
-def return_pos(current_pos, current_yaw, dist, degree):
-    deg = current_yaw+degree
+def return_pos(current_pos, current_yaw, dist, degree, view_ahead = 2):
+    deg = current_yaw+(degree-0.5)*np.pi
     if deg > np.pi:
         deg -= 2 * np.pi
     if deg < - np.pi:
         deg += 2 * np.pi
     
-    dx = dist*np.cos(deg)
-    dy = dist*np.sin(deg)
+    dx = dist*np.cos(deg)*view_ahead
+    dy = dist*np.sin(deg)*view_ahead
     return [current_pos[0]+dx, current_pos[1]+dy], deg

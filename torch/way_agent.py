@@ -74,7 +74,7 @@ class Agent:
         # self.action_bound_min = torch.tensor(env.action_space.low, device=device)
         # self.action_bound_max = torch.tensor(env.action_space.high, device=device)
         self.action_bound_min = torch.tensor(0, device=device)
-        self.action_bound_max = torch.tensor(2, device=device)
+        self.action_bound_max = torch.tensor(1, device=device)
 
         # declare value and policy
         args['state_dim'] = self.state_dim
@@ -157,11 +157,8 @@ class Agent:
 
         # convert to tensor
         states_tensor = torch.tensor(states, device=self.device, dtype=torch.float)
-        actions_tensor = torch.tensor(actions, device=self.device, dtype=torch.float).reshape(-1, self.action_dim)
-        actions_tensor[:,:5] = normalize(actions_tensor[:,:5], 2, 0)
-        actions_tensor[:,5:] = normalize(actions_tensor[:,5:], np.pi/2, -np.pi/2)
-        # norm_actions_tensor = self.normalizeAction(actions_tensor)
-        norm_actions_tensor = actions_tensor
+        actions_tensor = torch.tensor(actions, device=self.device, dtype=torch.float)
+        norm_actions_tensor = self.normalizeAction(actions_tensor)
         next_states_tensor = torch.tensor(next_states, device=self.device, dtype=torch.float)
 
         # get GAEs and Tagets

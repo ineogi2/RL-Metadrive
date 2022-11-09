@@ -36,17 +36,18 @@ def waypoint_to_action_space(positions, heading):
     dist = deque()
     degree = deque()
     for i in range(len(positions)-1):
-        dist.append(norm(positions[i], positions[i+1]))
+        dist.append(norm(positions[i], positions[i+1])/4)
         d = yaw(positions[i], positions[i+1])-heading[i]
         if d > np.pi:
             d -= 2 * np.pi
         if d < - np.pi:
             d += 2 * np.pi
+        d = d/np.pi+0.5
         degree.append(d)
     return dist+degree
 
 def train(main_args):
-    algo_idx = 2
+    algo_idx = 1
     agent_name = '1109'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
@@ -91,6 +92,7 @@ def train(main_args):
                     # manual_control=True,
                     random_lane_width=True,
                     random_lane_num=True,
+                    traffic_density=0,
                     start_seed=random.randint(0, 1000)))
     agent = Agent(env, device, args)
 
@@ -145,8 +147,6 @@ def train(main_args):
                 acc = (25-info["vehicle_speed"])*0.7
 
                 next_state, reward, done, info = env.step([steer, acc])
-            
-
 
                 cost = info['cost']
                 if cost == 0:
@@ -166,23 +166,24 @@ def train(main_args):
 
                 done = True if step >= max_ep_len else done
                 fail = True if step < max_ep_len and done else False
+                trajectories.append([state, waypoints, reward, cost, done, fail, next_state])
 
-                # deque
-                if step%3==1:
-                    state_deque.append(state)
-                    position_deque.append([info["vehicle_position"][0], -info["vehicle_position"][1]])
-                    heading_deque.append(np.arctan2(-info['vehicle_heading'][1], info['vehicle_heading'][0]))
-                    reward_deque.append(reward)
-                    cost_deque.append(cost)
-                    done_deque.append(done)
-                    fail_deque.append(fail)
+                # # deque
+                # if step%3==1:
+                #     state_deque.append(state)
+                #     position_deque.append([info["vehicle_position"][0], -info["vehicle_position"][1]])
+                #     heading_deque.append(np.arctan2(-info['vehicle_heading'][1], info['vehicle_heading'][0]))
+                #     reward_deque.append(reward)
+                #     cost_deque.append(cost)
+                #     done_deque.append(done)
+                #     fail_deque.append(fail)
 
-                if len(position_deque) == waypoint_num+1:
-                    train_action = waypoint_to_action_space(position_deque, heading_deque)
-                    print("train action : ", train_action)
-                    trajectories.append([state_deque[0], train_action, reward_deque[0],
-                                    cost_deque[0], done_deque[0], fail_deque[0], state_deque[1]])
-                    position_deque.popleft()
+                # if len(position_deque) == waypoint_num+1:
+                #     train_action = waypoint_to_action_space(position_deque, heading_deque)
+                #     # print("train action : ", train_action)
+                #     trajectories.append([state_deque[0], train_action, reward_deque[0],
+                #                     cost_deque[0], done_deque[0], fail_deque[0], state_deque[1]])
+                #     position_deque.popleft()
 
                 state = next_state
                 score += reward
