@@ -21,6 +21,7 @@ class Policy(nn.Module):
     def __init__(self, args):
         super(Policy, self).__init__()
 
+        self.predict_length = 5
         self.state_dim = args['state_dim']
         self.action_dim = args['action_dim']
         self.hidden1_units = args['hidden1']
@@ -28,25 +29,48 @@ class Policy(nn.Module):
 
         self.fc1 = nn.Linear(self.state_dim, self.hidden1_units)
         self.fc2 = nn.Linear(self.hidden1_units, self.hidden2_units)
+        self.fc_mean = nn.Linear(self.hidden2_units, self.action_dim)
+        self.fc_log_std = nn.Linear(self.hidden2_units, 2*self.predict_length)
+
+        self.gru_way = nn.GRUCell(2, self.action_dim)
+        self.fc_way = nn.Linear(self.action_dim, 2)
 
         self.act_fn = torch.relu
         self.output_act_fn = torch.sigmoid
 
-        self.fc_mean = nn.Linear(self.hidden2_units, self.action_dim)
-        self.fc_log_std = nn.Linear(self.hidden2_units, self.action_dim)
-
 
     def forward(self, x):
+        output_wp = []
+
         x = self.act_fn(self.fc1(x))
         x = self.act_fn(self.fc2(x))
 
-        mean = self.output_act_fn(self.fc_mean(x))
+        z = self.output_act_fn(self.fc_mean(x))
+        if z.dim() == 1:
+            wp = torch.zeros(2).to("cuda")
+        else:
+            wp = torch.zeros(z.shape[0],2).to("cuda")
+
         log_std = self.fc_log_std(x)
 
         log_std = torch.clamp(log_std, min=LOG_STD_MIN, max=LOG_STD_MAX)
         std = torch.exp(log_std)
 
-        return mean, log_std, std
+        for _ in range(self.predict_length):
+            z = self.gru_way(wp, z)
+            d_wp = self.fc_way(z)
+            # print(torch.mean(z), d_wp)
+            wp = wp + d_wp
+            output_wp.append(wp)
+
+        if z.dim() == 1:
+            pred_wp = torch.stack(output_wp, dim=0).reshape(-1)
+        else:
+            pred_wp = torch.stack(output_wp, dim=1).reshape(z.shape[0],-1)
+        # pred_wp = torch.stack(output_wp, dim=1 if z.dim()==1 else 1)
+        # print(pred_wp.shape, log_std.shape)
+
+        return pred_wp, log_std, std
 
     def initialize(self):
         for m_idx, module in enumerate(self.children()):

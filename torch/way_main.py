@@ -24,7 +24,7 @@ sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 from metadrive import SafeMetaDriveEnv
 
 sys.path.append("/home/ineogi2/RL-Lab")
-from PID.PID_controller_v5 import Controller, State
+from PID.PID_controller_v6 import Controller, State
 
 def norm(pt1, pt2):
     return ((pt1[0]-pt2[0])**2 + (pt1[1]-pt2[1])**2)**0.5
@@ -32,23 +32,18 @@ def norm(pt1, pt2):
 def yaw(pt1, pt2):
     return np.arctan2(pt2[1]-pt1[1], pt2[0]-pt1[0])
 
-def waypoint_to_action_space(positions, heading):
-    dist = deque()
-    degree = deque()
+def waypoint_to_action_space(positions):
+    positions = np.array(positions)
+    waypoint = deque()
     for i in range(len(positions)-1):
-        dist.append(norm(positions[i], positions[i+1])/4)
-        d = yaw(positions[i], positions[i+1])-heading[i]
-        if d > np.pi:
-            d -= 2 * np.pi
-        if d < - np.pi:
-            d += 2 * np.pi
-        d = d/np.pi+0.5
-        degree.append(d)
-    return dist+degree
+        wp = positions[i+1] - positions[0]
+        waypoint.append(wp[0]/2)
+        waypoint.append(-wp[1]/2)
+    return waypoint
 
 def train(main_args):
     algo_idx = 1
-    agent_name = '1109'
+    agent_name = '1124'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
     max_episodes = 10
@@ -62,7 +57,7 @@ def train(main_args):
         'save_name': save_name,
         'discount_factor':0.99,
         'hidden1':512,
-        'hidden2':512,
+        'hidden2':256,
         'v_lr':2e-4,
         'cost_v_lr':2e-4,
         'value_epochs':200,
@@ -88,7 +83,7 @@ def train(main_args):
     random.seed(seed)
 
     # env = Env(env_name, seed, max_ep_len)
-    env=SafeMetaDriveEnv(dict(use_render=True,
+    env=SafeMetaDriveEnv(dict(use_render=False,
                     # manual_control=True,
                     random_lane_width=True,
                     random_lane_num=True,
@@ -96,11 +91,11 @@ def train(main_args):
                     start_seed=random.randint(0, 1000)))
     agent = Agent(env, device, args)
 
-    state_controller = State()
+    state_converter = State()
     controller = Controller()
 
     # for wandb
-    # wandb.init(project='[torch] CPO', entity='ineogi2', name='1107-new-waypoint-pretrain')
+    wandb.init(project='[torch] CPO', entity='ineogi2', name='1124-waypoint-gru')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -122,14 +117,14 @@ def train(main_args):
             step = 0
             broken_step = 0
 
-            waypoint_num = 5
-            state_deque = deque(maxlen=waypoint_num+1)
-            position_deque = deque(maxlen=waypoint_num+1)
-            heading_deque = deque(maxlen=waypoint_num+1)
-            reward_deque = deque(maxlen=waypoint_num+1)
-            cost_deque = deque(maxlen=waypoint_num+1)
-            done_deque = deque(maxlen=waypoint_num+1)
-            fail_deque = deque(maxlen=waypoint_num+1)
+            # waypoint_num = 5
+            # state_deque = deque(maxlen=waypoint_num+1)
+            # position_deque = deque(maxlen=waypoint_num+1)
+            # heading_deque = deque(maxlen=waypoint_num+1)
+            # reward_deque = deque(maxlen=waypoint_num+1)
+            # cost_deque = deque(maxlen=waypoint_num+1)
+            # done_deque = deque(maxlen=waypoint_num+1)
+            # fail_deque = deque(maxlen=waypoint_num+1)
 
             next_state, reward, done, info = env.step([0,0])
             while True:                
@@ -137,16 +132,17 @@ def train(main_args):
                 state_tensor = torch.tensor(state, device=device, dtype=torch.float)
                 action_tensor = agent.getAction(state_tensor, is_train=True)
                 waypoints = action_tensor.detach().cpu().numpy()
-                print(waypoints)
+                # print(waypoints)
 
-                state_controller.state_update(info, waypoints)
-                # print(str(state_controller))
-                controller.update_all(state_controller)
+                state_converter.state_update(info, waypoints)
+                # print(str(state_converter))
+                controller.update_all(state_converter)
                 controller.update_controls()
                 steer = controller.steer
                 acc = (25-info["vehicle_speed"])*0.7
 
                 next_state, reward, done, info = env.step([steer, acc])
+                # next_state, reward, done, info = env.step([0, 0])
 
                 cost = info['cost']
                 if cost == 0:
@@ -172,14 +168,14 @@ def train(main_args):
                 # if step%3==1:
                 #     state_deque.append(state)
                 #     position_deque.append([info["vehicle_position"][0], -info["vehicle_position"][1]])
-                #     heading_deque.append(np.arctan2(-info['vehicle_heading'][1], info['vehicle_heading'][0]))
+                #     # heading_deque.append(np.arctan2(-info['vehicle_heading'][1], info['vehicle_heading'][0]))
                 #     reward_deque.append(reward)
                 #     cost_deque.append(cost)
                 #     done_deque.append(done)
                 #     fail_deque.append(fail)
 
                 # if len(position_deque) == waypoint_num+1:
-                #     train_action = waypoint_to_action_space(position_deque, heading_deque)
+                #     train_action = waypoint_to_action_space(position_deque)
                 #     # print("train action : ", train_action)
                 #     trajectories.append([state_deque[0], train_action, reward_deque[0],
                 #                     cost_deque[0], done_deque[0], fail_deque[0], state_deque[1]])
@@ -205,7 +201,7 @@ def train(main_args):
         print(f'epoch : {epoch+1}')
         print(log_data,"\n")
         if main_args.graph: graph.update([score, objective, v_loss, kl, entropy])
-        # wandb.log(log_data)
+        wandb.log(log_data)
         if (epoch + 1)%save_freq == 0:
             agent.save()
 

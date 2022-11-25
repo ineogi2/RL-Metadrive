@@ -70,7 +70,7 @@ class Agent:
         # constant about env
         self.state_dim = env.observation_space.shape[0]
         # self.action_dim = env.action_space.shape[0]
-        self.action_dim = 10
+        self.action_dim = 32
         # self.action_bound_min = torch.tensor(env.action_space.low, device=device)
         # self.action_bound_max = torch.tensor(env.action_space.high, device=device)
         self.action_bound_min = torch.tensor(0, device=device)
