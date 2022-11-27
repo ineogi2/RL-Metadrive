@@ -37,13 +37,14 @@ def waypoint_to_action_space(positions):
     waypoint = deque()
     for i in range(len(positions)-1):
         wp = positions[i+1] - positions[0]
-        waypoint.append(wp[0]/2)
-        waypoint.append(-wp[1]/2)
+        waypoint.append(wp[0])
+        waypoint.append(-wp[1])
     return waypoint
+
 
 def train(main_args):
     algo_idx = 1
-    agent_name = '1124'
+    agent_name = '1127'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
     max_episodes = 10
@@ -83,8 +84,8 @@ def train(main_args):
     random.seed(seed)
 
     # env = Env(env_name, seed, max_ep_len)
-    env=SafeMetaDriveEnv(dict(use_render=False,
-                    # manual_control=True,
+    env=SafeMetaDriveEnv(dict(use_render=True if main_args.render else False,
+                    manual_control=True if main_args.expert else False,
                     random_lane_width=True,
                     random_lane_num=True,
                     traffic_density=0,
@@ -95,7 +96,8 @@ def train(main_args):
     controller = Controller()
 
     # for wandb
-    wandb.init(project='[torch] CPO', entity='ineogi2', name='1124-waypoint-gru')
+    if main_args.wandb:
+        wandb.init(project='[torch] CPO', entity='ineogi2', name='1127-waypoint-gru')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -109,7 +111,7 @@ def train(main_args):
         while ep < max_episodes:
             state = env.reset()
             controller.reset()
-            # env.vehicle.expert_takeover=True
+            if main_args.expert: env.vehicle.expert_takeover=True
 
             ep += 1
             score = 0
@@ -117,22 +119,13 @@ def train(main_args):
             step = 0
             broken_step = 0
 
-            # waypoint_num = 5
-            # state_deque = deque(maxlen=waypoint_num+1)
-            # position_deque = deque(maxlen=waypoint_num+1)
-            # heading_deque = deque(maxlen=waypoint_num+1)
-            # reward_deque = deque(maxlen=waypoint_num+1)
-            # cost_deque = deque(maxlen=waypoint_num+1)
-            # done_deque = deque(maxlen=waypoint_num+1)
-            # fail_deque = deque(maxlen=waypoint_num+1)
-
-            next_state, reward, done, info = env.step([0,0])
+            state, reward, done, info = env.step([0, 0])
             while True:                
                 step += 1
                 state_tensor = torch.tensor(state, device=device, dtype=torch.float)
                 action_tensor = agent.getAction(state_tensor, is_train=True)
                 waypoints = action_tensor.detach().cpu().numpy()
-                # print(waypoints)
+                print(waypoints)
 
                 state_converter.state_update(info, waypoints)
                 # print(str(state_converter))
@@ -141,8 +134,10 @@ def train(main_args):
                 steer = controller.steer
                 acc = (25-info["vehicle_speed"])*0.7
 
-                next_state, reward, done, info = env.step([steer, acc])
-                # next_state, reward, done, info = env.step([0, 0])
+                if main_args.expert:
+                    next_state, reward, done, info = env.step([0, 0])
+                else:
+                    next_state, reward, done, info = env.step([steer, acc])
 
                 cost = info['cost']
                 if cost == 0:
@@ -164,23 +159,6 @@ def train(main_args):
                 fail = True if step < max_ep_len and done else False
                 trajectories.append([state, waypoints, reward, cost, done, fail, next_state])
 
-                # # deque
-                # if step%3==1:
-                #     state_deque.append(state)
-                #     position_deque.append([info["vehicle_position"][0], -info["vehicle_position"][1]])
-                #     # heading_deque.append(np.arctan2(-info['vehicle_heading'][1], info['vehicle_heading'][0]))
-                #     reward_deque.append(reward)
-                #     cost_deque.append(cost)
-                #     done_deque.append(done)
-                #     fail_deque.append(fail)
-
-                # if len(position_deque) == waypoint_num+1:
-                #     train_action = waypoint_to_action_space(position_deque)
-                #     # print("train action : ", train_action)
-                #     trajectories.append([state_deque[0], train_action, reward_deque[0],
-                #                     cost_deque[0], done_deque[0], fail_deque[0], state_deque[1]])
-                #     position_deque.popleft()
-
                 state = next_state
                 score += reward
                 cv += info['num_cv']
@@ -200,24 +178,131 @@ def train(main_args):
                     "objective":objective, "cost surrogate":cost_surrogate, "kl":kl, "entropy":entropy}
         print(f'epoch : {epoch+1}')
         print(log_data,"\n")
+
         if main_args.graph: graph.update([score, objective, v_loss, kl, entropy])
-        wandb.log(log_data)
+        if main_args.wandb: wandb.log(log_data)
+
         if (epoch + 1)%save_freq == 0:
             agent.save()
 
     if main_args.graph: graph.update(None, finished=True)
 
-def test(args):
-    pass
+
+def imitaion_learning(main_args):
+    algo_idx = 1
+    agent_name = '1127'
+    env_name = "Safe-metadrive-env"
+    max_ep_len = 1000
+    epochs = 500
+    algo = '{}_{}'.format(agent_name, algo_idx)
+    save_name = '_'.join(env_name.split('-')[:-1])
+    save_name = "result/{}_{}".format(save_name, algo)
+    args = {
+        'agent_name':agent_name,
+        'save_name': save_name,
+        'discount_factor':0.99,
+        'hidden1':512,
+        'hidden2':256,
+        'v_lr':2e-3,
+        'cost_v_lr':2e-3,
+        'value_epochs':200,
+        'batch_size':10000,
+        'num_conjugate':10,
+        'max_decay_num':10,
+        'line_decay':0.8,
+        'max_kl':0.01,
+        'damping_coeff':0.01,
+        'gae_coeff':0.97,
+        'cost_d':10.0/1000.0,
+    }
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+        print('[torch] cuda is used.')
+    else:
+        device = torch.device('cpu')
+        print('[torch] cpu is used.')
+
+
+    # env = Env(env_name, seed, max_ep_len)
+    env=SafeMetaDriveEnv(dict(use_render=True if main_args.render else False,
+                    manual_control=True,
+                    random_lane_width=True,
+                    random_lane_num=True,
+                    traffic_density=0.2,
+                    start_seed=random.randint(0,1000)))
+
+    agent = Agent(env, device, args)
+
+    # for random seed
+    seed = algo_idx + random.randint(0, 100)
+    np.random.seed(seed)
+    random.seed(seed)
+
+    for epoch in range(epochs):
+        print(f'epoch : {epoch+1}')
+
+        trajectories = []
+        state_list = deque(maxlen=6)
+        position_list = deque(maxlen=6)
+        reward_list = deque(maxlen=6)
+        cost_list = deque(maxlen=6)
+        done_list = deque(maxlen=6)
+        fail_list = deque(maxlen=6)
+
+        env.reset()
+        env.vehicle.expert_takeover=True
+        step = 0
+        broken_step = 0
+
+        while True:
+            step += 1
+            state, reward, done, info = env.step([0, 0])
+
+            cost = info['cost']
+            if cost == 0:
+                broken_step = 0
+            else:
+                if info["cost_reason"] == "on_broken_line":
+                    if broken_step < 20:
+                        broken_step += 1
+                        cost = 0
+                    else:
+                        reward -= cost
+                        cost = 0
+
+            done = True if step >= max_ep_len else done
+            fail = True if step < max_ep_len and done else False
+
+
+            state_list.append(state)
+            position_list.append(info["vehicle_position"])
+            reward_list.append(reward)
+            cost_list.append(cost)
+            done_list.append(done)
+            fail_list.append(fail)
+
+            if len(state_list) == 6:
+                waypoints = waypoint_to_action_space(position_list)
+                trajectories.append([state_list[0], waypoints, reward_list[0], cost_list[0], done_list[0], fail_list[0], state_list[1]])
+
+            if done: break
+
+        v_loss, cost_v_loss, _, _, kl, _ = agent.train(trajs=trajectories)
+        agent.save()
+        print(f'value_loss : {v_loss} / cost_value_loss : {cost_v_loss} / kl : {kl} ')
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='CPO')
-    parser.add_argument('--test', action='store_true', help='For test.')
+    parser.add_argument('--imitation', action='store_true', help='For imitation learning.')
     parser.add_argument('--resume', type=int, default=0, help='type # of checkpoint.')
     parser.add_argument('--graph', action='store_true', help='For graph.')
+    parser.add_argument('--wandb', action='store_true', help='For Wandb.')
+    parser.add_argument('--expert', action='store_true', help='For expert takeover')
+    parser.add_argument('--render', action='store_true', help='For rendering')
     args = parser.parse_args()
     dict_args = vars(args)
-    if args.test:
-        test(args)
+    if args.imitation:
+        imitaion_learning(args)
     else:
         train(args)

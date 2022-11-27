@@ -59,7 +59,6 @@ class Policy(nn.Module):
         for _ in range(self.predict_length):
             z = self.gru_way(wp, z)
             d_wp = self.fc_way(z)
-            # print(torch.mean(z), d_wp)
             wp = wp + d_wp
             output_wp.append(wp)
 
