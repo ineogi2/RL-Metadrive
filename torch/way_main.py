@@ -25,6 +25,10 @@ from metadrive import SafeMetaDriveEnv
 
 sys.path.append("/home/ineogi2/RL-Lab")
 from PID.PID_controller_v6 import Controller, State
+# from PID.PID_controller_v7 import Controller, State
+
+
+############ math tools ###########
 
 def norm(pt1, pt2):
     return ((pt1[0]-pt2[0])**2 + (pt1[1]-pt2[1])**2)**0.5
@@ -32,19 +36,43 @@ def norm(pt1, pt2):
 def yaw(pt1, pt2):
     return np.arctan2(pt2[1]-pt1[1], pt2[0]-pt1[0])
 
-def waypoint_to_action_space(positions):
-    positions = np.array(positions)
-    waypoint = deque()
+# relative coordinate
+def position_to_relative_wp(position_list, direction, pred_length):
+    wp_list = deque()
+
+    positions = np.array(position_list)
+    positions[:,1] = -positions[:,1]                        # y coordinate reset
+    positions = positions - positions[0]                    # relative position
+    x_direction = np.array([direction[0], -direction[1]])    # y coordinate reset
+    y_direction = np.array([direction[1], direction[0]])
+
+    for i in range(1, pred_length+1):
+        dx = np.dot(x_direction, positions[i])
+        dy = np.dot(y_direction, positions[i])
+        wp_list.append(dx)
+        wp_list.append(dy)
+
+    return wp_list
+
+# absolute coordinate
+def position_to_absolute_wp(position_list):
+    positions = np.array(position_list)
+    wp_list = deque()
+
     for i in range(len(positions)-1):
         wp = positions[i+1] - positions[0]
-        waypoint.append(wp[0])
-        waypoint.append(-wp[1])
-    return waypoint
+        wp_list.append(wp[0])
+        wp_list.append(-wp[1])
+
+    return wp_list
+
+###################################
+
 
 
 def train(main_args):
     algo_idx = 1
-    agent_name = '1127'
+    agent_name = '1201'
     env_name = "Safe-metadrive-env"
     max_ep_len = 500
     max_episodes = 10
@@ -58,7 +86,7 @@ def train(main_args):
         'save_name': save_name,
         'discount_factor':0.99,
         'hidden1':512,
-        'hidden2':256,
+        'hidden2':512,
         'v_lr':2e-4,
         'cost_v_lr':2e-4,
         'value_epochs':200,
@@ -97,12 +125,12 @@ def train(main_args):
 
     # for wandb
     if main_args.wandb:
-        wandb.init(project='[torch] CPO', entity='ineogi2', name='1127-waypoint-gru')
+        wandb.init(project='[torch] CPO', entity='ineogi2', name='1130-waypoint-gru')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
         trajectories = []
-        ep = 9
+        ep = 0
         scores = []
         cvs = []
         fails = 0
@@ -126,13 +154,14 @@ def train(main_args):
                 action_tensor = agent.getAction(state_tensor, is_train=True)
                 waypoints = action_tensor.detach().cpu().numpy()
                 print(waypoints)
+                # waypoints = [1,0,2,1,3,2,4,3,5,4]
 
                 state_converter.state_update(info, waypoints)
                 # print(str(state_converter))
                 controller.update_all(state_converter)
                 controller.update_controls()
                 steer = controller.steer
-                acc = (25-info["vehicle_speed"])*0.7
+                acc = controller.acc
 
                 if main_args.expert:
                     next_state, reward, done, info = env.step([0, 0])
@@ -190,7 +219,7 @@ def train(main_args):
 
 def imitaion_learning(main_args):
     algo_idx = 1
-    agent_name = '1127'
+    agent_name = '1201'
     env_name = "Safe-metadrive-env"
     max_ep_len = 1000
     epochs = 500
@@ -202,9 +231,9 @@ def imitaion_learning(main_args):
         'save_name': save_name,
         'discount_factor':0.99,
         'hidden1':512,
-        'hidden2':256,
-        'v_lr':2e-3,
-        'cost_v_lr':2e-3,
+        'hidden2':512,
+        'v_lr':2e-4,
+        'cost_v_lr':2e-4,
         'value_epochs':200,
         'batch_size':10000,
         'num_conjugate':10,
@@ -226,9 +255,9 @@ def imitaion_learning(main_args):
     # env = Env(env_name, seed, max_ep_len)
     env=SafeMetaDriveEnv(dict(use_render=True if main_args.render else False,
                     manual_control=True,
-                    random_lane_width=True,
-                    random_lane_num=True,
-                    traffic_density=0.2,
+                    # random_lane_width=True,
+                    # random_lane_num=True,
+                    traffic_density=0.0,
                     start_seed=random.randint(0,1000)))
 
     agent = Agent(env, device, args)
@@ -238,16 +267,26 @@ def imitaion_learning(main_args):
     np.random.seed(seed)
     random.seed(seed)
 
-    for epoch in range(epochs):
-        print(f'epoch : {epoch+1}')
+    pred_length = 2
 
-        trajectories = []
-        state_list = deque(maxlen=6)
-        position_list = deque(maxlen=6)
-        reward_list = deque(maxlen=6)
-        cost_list = deque(maxlen=6)
-        done_list = deque(maxlen=6)
-        fail_list = deque(maxlen=6)
+    if main_args.wandb:
+        wandb.init(project='[torch] CPO', entity='ineogi2', name=f'{agent_name}-{algo_idx}-imitation learning')
+
+    # for imitation learning
+    import torch.optim as optim
+    optimizer = optim.Adam(agent.policy.parameters(), lr=1e-3)
+    loss_func = torch.nn.MSELoss()
+
+    for epoch in range(epochs):
+
+        trajectories = []; loss_mean = 0
+        state_list = deque(maxlen=pred_length+1)
+        position_list = deque(maxlen=pred_length+1)
+        direction_list = deque(maxlen=pred_length+1)
+        reward_list = deque(maxlen=pred_length+1)
+        cost_list = deque(maxlen=pred_length+1)
+        done_list = deque(maxlen=pred_length+1)
+        fail_list = deque(maxlen=pred_length+1)
 
         env.reset()
         env.vehicle.expert_takeover=True
@@ -276,20 +315,42 @@ def imitaion_learning(main_args):
 
             state_list.append(state)
             position_list.append(info["vehicle_position"])
+            # direction_list.append(info['vehicle_heading'])
             reward_list.append(reward)
             cost_list.append(cost)
             done_list.append(done)
             fail_list.append(fail)
 
-            if len(state_list) == 6:
-                waypoints = waypoint_to_action_space(position_list)
+            if len(state_list) == pred_length+1:
+                # waypoints = position_to_relative_wp(position_list, direction_list[0], pred_length)
+                waypoints = position_to_absolute_wp(position_list)
+                # print(waypoints)
                 trajectories.append([state_list[0], waypoints, reward_list[0], cost_list[0], done_list[0], fail_list[0], state_list[1]])
 
             if done: break
 
-        v_loss, cost_v_loss, _, _, kl, _ = agent.train(trajs=trajectories)
+        # batch_size = len(trajectories)
+        # for idx in range(batch_size):
+        #     batch_state = torch.tensor(trajectories[idx][0], device=device)
+        #     wp_data = torch.tensor(trajectories[idx][1], device=device)
+        #     wp_pred, _, _ = agent.policy(batch_state)
+        #     wp_pred = wp_pred.clone().detach().requires_grad_(True).type(torch.float64)
+        #     # print(wp_data, wp_pred)
+
+        #     loss = loss_func(wp_data, wp_pred)
+        #     loss_mean += loss.item()
+        #     loss.backward()
+        #     optimizer.step()
+        #     optimizer.zero_grad()
+
+        print(f'\nepoch : {epoch+1}')
+        # print(f'loss : {round(loss_mean/batch_size, 3)}')
+        v_loss, cost_v_loss, objective, _, kl, _ = agent.train(trajs=trajectories)
+        log_data = {'objective' : objective, 'value loss' : v_loss, 'cost value loss' : cost_v_loss, 'kl' : kl}
+        if main_args.wandb: wandb.log(log_data)
+        print(log_data)
         agent.save()
-        print(f'value_loss : {v_loss} / cost_value_loss : {cost_v_loss} / kl : {kl} ')
+
 
 
 if __name__ == "__main__":

@@ -73,7 +73,7 @@ class Agent:
         self.action_dim = 32
         # self.action_bound_min = torch.tensor(env.action_space.low, device=device)
         # self.action_bound_max = torch.tensor(env.action_space.high, device=device)
-        self.action_bound_min = torch.tensor(0, device=device)
+        self.action_bound_min = torch.tensor(-1, device=device)
         self.action_bound_max = torch.tensor(1, device=device)
 
         # declare value and policy
@@ -109,7 +109,7 @@ class Agent:
         #     # action = self.unnormalizeAction(mean)
         # else:
         #     action = self.unnormalizeAction(mean)
-        # clipped_action = clip(action, self.action_bound_max, self.action_bound_min)
+        # # clipped_action = clip(action, self.action_bound_max, self.action_bound_min)
         return mean
 
     def getGaesTargets(self, rewards:np.ndarray, values:np.ndarray, dones:np.ndarray, fails:np.ndarray, next_values:np.ndarray) -> List[np.ndarray]:
@@ -158,7 +158,8 @@ class Agent:
         # convert to tensor
         states_tensor = torch.tensor(states, device=self.device, dtype=torch.float)
         actions_tensor = torch.tensor(actions, device=self.device, dtype=torch.float)
-        norm_actions_tensor = self.normalizeAction(actions_tensor)
+        # norm_actions_tensor = self.normalizeAction(actions_tensor)
+        norm_actions_tensor = actions_tensor
         next_states_tensor = torch.tensor(next_states, device=self.device, dtype=torch.float)
 
         # get GAEs and Tagets

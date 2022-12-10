@@ -21,7 +21,7 @@ class Policy(nn.Module):
     def __init__(self, args):
         super(Policy, self).__init__()
 
-        self.predict_length = 5
+        self.predict_length = 2
         self.state_dim = args['state_dim']
         self.action_dim = args['action_dim']
         self.hidden1_units = args['hidden1']
@@ -36,7 +36,7 @@ class Policy(nn.Module):
         self.fc_way = nn.Linear(self.action_dim, 2)
 
         self.act_fn = torch.relu
-        self.output_act_fn = torch.sigmoid
+        self.output_act_fn = torch.tanh
 
 
     def forward(self, x):
@@ -45,16 +45,14 @@ class Policy(nn.Module):
         x = self.act_fn(self.fc1(x))
         x = self.act_fn(self.fc2(x))
 
-        z = self.output_act_fn(self.fc_mean(x))
+        # pred_wp = self.output_act_fn(self.fc_mean(x))
+
+        # for prediction of waypoints
+        z = self.act_fn(self.fc_mean(x))
         if z.dim() == 1:
             wp = torch.zeros(2).to("cuda")
         else:
             wp = torch.zeros(z.shape[0],2).to("cuda")
-
-        log_std = self.fc_log_std(x)
-
-        log_std = torch.clamp(log_std, min=LOG_STD_MIN, max=LOG_STD_MAX)
-        std = torch.exp(log_std)
 
         for _ in range(self.predict_length):
             z = self.gru_way(wp, z)
@@ -66,8 +64,11 @@ class Policy(nn.Module):
             pred_wp = torch.stack(output_wp, dim=0).reshape(-1)
         else:
             pred_wp = torch.stack(output_wp, dim=1).reshape(z.shape[0],-1)
-        # pred_wp = torch.stack(output_wp, dim=1 if z.dim()==1 else 1)
-        # print(pred_wp.shape, log_std.shape)
+
+        # for standard deviation
+        log_std = self.fc_log_std(x)
+        log_std = torch.clamp(log_std, min=LOG_STD_MIN, max=LOG_STD_MAX)
+        std = torch.exp(log_std)
 
         return pred_wp, log_std, std
 
