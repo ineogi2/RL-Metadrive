@@ -19,6 +19,7 @@ import time
 import gym
 import sys
 from collections import deque
+import os
 
 sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 from metadrive import SafeMetaDriveEnv
@@ -66,15 +67,80 @@ def position_to_absolute_wp(position_list):
 
     return wp_list
 
+# modify waypoint to lane midpoint
+def modify_waypoint(wp_list, cur_lane, info):
+    cur_position = np.array(info['vehicle_position']); cur_position[1] *= -1
+    lateral, lane_index, lane_width, dist_to_left, dist_to_right = info['vehicle_heading_sine']
+    lateral = lateral/norm(lateral)
+    lateral[1] *= -1
+    pred_length = len(wp_list)//2
+    
+    modified_wp = []
+    for i in range(pred_length):
+        dx, dy = wp_list[2*i], wp_list[2*i+1]
+        wp = cur_position+np.array([dx, dy])
+        wp_to_lane_dist = cur_lane.distance([wp[0], -wp[1]])
+        if wp_to_lane_dist <= lane_width:
+            # new_wp = 
+            modified_wp.append()
+
+
 ###################################
 
+import torch.nn as nn
+class GRUNet(nn.Module):
+    def __init__(self, args, env):
+        super().__init__()
+        self.predict_length = args['pred_length']
+        self.state_dim = env.observation_space.shape[0]
+        self.action_dim = 32
+        self.hidden1_units = args['hidden1']
+        self.hidden2_units = args['hidden2']
+
+        self.fc1 = nn.Linear(self.state_dim, self.hidden1_units)
+        self.fc2 = nn.Linear(self.hidden1_units, self.hidden2_units)
+        self.fc_mean = nn.Linear(self.hidden2_units, self.action_dim)
+
+        self.gru_way = nn.GRUCell(2, self.action_dim)
+        self.fc_way = nn.Linear(self.action_dim, 2)
+
+        self.act_fn = torch.relu
+        self.output_act_fn = torch.tanh
+
+    def forward(self, x):
+        output_wp = []
+
+        x = self.act_fn(self.fc1(x))
+        x = self.act_fn(self.fc2(x))
+
+        # pred_wp = self.output_act_fn(self.fc_mean(x))
+
+        # for prediction of waypoints
+        z = self.act_fn(self.fc_mean(x))
+        if z.dim() == 1:
+            wp = torch.zeros(2).to("cuda")
+        else:
+            wp = torch.zeros(z.shape[0],2).to("cuda")
+
+        for _ in range(self.predict_length):
+            z = self.gru_way(wp, z)
+            d_wp = self.fc_way(z)
+            wp = wp + d_wp
+            output_wp.append(wp)
+
+        if z.dim() == 1:
+            pred_wp = torch.stack(output_wp, dim=0).reshape(-1)
+        else:
+            pred_wp = torch.stack(output_wp, dim=1).reshape(z.shape[0],-1)
+
+        return pred_wp
 
 
 def train(main_args):
     algo_idx = 1
-    agent_name = '1201'
+    agent_name = '1212'
     env_name = "Safe-metadrive-env"
-    max_ep_len = 500
+    max_ep_len = 1500
     max_episodes = 10
     epochs = 2500
     save_freq = 10
@@ -85,8 +151,8 @@ def train(main_args):
         'agent_name':agent_name,
         'save_name': save_name,
         'discount_factor':0.99,
-        'hidden1':512,
-        'hidden2':512,
+        'hidden1':256,
+        'hidden2':128,
         'v_lr':2e-4,
         'cost_v_lr':2e-4,
         'value_epochs':200,
@@ -98,6 +164,7 @@ def train(main_args):
         'damping_coeff':0.01,
         'gae_coeff':0.97,
         'cost_d':10.0/1000.0,
+        'pred_length':2
     }
     if torch.cuda.is_available():
         device = torch.device('cuda')
@@ -118,14 +185,22 @@ def train(main_args):
                     random_lane_num=True,
                     traffic_density=0,
                     start_seed=random.randint(0, 1000)))
-    agent = Agent(env, device, args)
+    
+    # load agent
+    # agent = Agent(env, device, args)
+    agent = GRUNet(args, env).to(device)
+    if os.path.isfile('GRUNet.pt'):
+        agent = torch.load('GRUNet.pt')
+        print('[Load] success.')
+    else:
+        print('[New] model')
 
     state_converter = State()
     controller = Controller()
 
     # for wandb
     if main_args.wandb:
-        wandb.init(project='[torch] CPO', entity='ineogi2', name='1130-waypoint-gru')
+        wandb.init(project='[torch] CPO', entity='ineogi2', name=f'{agent_name}-{algo_idx}-train')
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -151,7 +226,8 @@ def train(main_args):
             while True:                
                 step += 1
                 state_tensor = torch.tensor(state, device=device, dtype=torch.float)
-                action_tensor = agent.getAction(state_tensor, is_train=True)
+                # action_tensor = agent.getAction(state_tensor, is_train=True)
+                action_tensor = agent(state_tensor)
                 waypoints = action_tensor.detach().cpu().numpy()
                 print(waypoints)
                 # waypoints = [1,0,2,1,3,2,4,3,5,4]
@@ -219,7 +295,7 @@ def train(main_args):
 
 def imitaion_learning(main_args):
     algo_idx = 1
-    agent_name = '1201'
+    agent_name = '1212'
     env_name = "Safe-metadrive-env"
     max_ep_len = 1000
     epochs = 500
@@ -230,8 +306,8 @@ def imitaion_learning(main_args):
         'agent_name':agent_name,
         'save_name': save_name,
         'discount_factor':0.99,
-        'hidden1':512,
-        'hidden2':512,
+        'hidden1':256,
+        'hidden2':128,
         'v_lr':2e-4,
         'cost_v_lr':2e-4,
         'value_epochs':200,
@@ -243,6 +319,7 @@ def imitaion_learning(main_args):
         'damping_coeff':0.01,
         'gae_coeff':0.97,
         'cost_d':10.0/1000.0,
+        'pred_length':2
     }
     if torch.cuda.is_available():
         device = torch.device('cuda')
@@ -260,21 +337,28 @@ def imitaion_learning(main_args):
                     traffic_density=0.0,
                     start_seed=random.randint(0,1000)))
 
-    agent = Agent(env, device, args)
+    # agent = Agent(env, device, args)
+    agent = GRUNet(args, env).to(device)
+    if os.path.isfile('GRUNet.pt'):
+        agent = torch.load('GRUNet.pt')
+        print('[Load] success.')
+    else:
+        print('[New] model')
 
     # for random seed
     seed = algo_idx + random.randint(0, 100)
     np.random.seed(seed)
     random.seed(seed)
 
-    pred_length = 2
+    pred_length = args['pred_length']
 
     if main_args.wandb:
         wandb.init(project='[torch] CPO', entity='ineogi2', name=f'{agent_name}-{algo_idx}-imitation learning')
 
     # for imitation learning
     import torch.optim as optim
-    optimizer = optim.Adam(agent.policy.parameters(), lr=1e-3)
+    # optimizer = optim.Adam(agent.policy.parameters(), lr=1e-3)
+    optimizer = optim.Adam(agent.parameters(), lr=1e-3)
     loss_func = torch.nn.MSELoss()
 
     for epoch in range(epochs):
@@ -329,28 +413,30 @@ def imitaion_learning(main_args):
 
             if done: break
 
-        # batch_size = len(trajectories)
-        # for idx in range(batch_size):
-        #     batch_state = torch.tensor(trajectories[idx][0], device=device)
-        #     wp_data = torch.tensor(trajectories[idx][1], device=device)
-        #     wp_pred, _, _ = agent.policy(batch_state)
-        #     wp_pred = wp_pred.clone().detach().requires_grad_(True).type(torch.float64)
-        #     # print(wp_data, wp_pred)
+        batch_size = len(trajectories)
+        for idx in range(batch_size):
+            batch_state = torch.tensor(trajectories[idx][0], device=device)
+            wp_data = torch.tensor(trajectories[idx][1], device=device)
+            wp_pred = agent(batch_state)
+            wp_pred = wp_pred.clone().detach().requires_grad_(True).type(torch.float64)
+            print(wp_data, wp_pred)
 
-        #     loss = loss_func(wp_data, wp_pred)
-        #     loss_mean += loss.item()
-        #     loss.backward()
-        #     optimizer.step()
-        #     optimizer.zero_grad()
+            loss = loss_func(wp_data, wp_pred)
+            loss_mean += loss.item()
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
 
         print(f'\nepoch : {epoch+1}')
-        # print(f'loss : {round(loss_mean/batch_size, 3)}')
-        v_loss, cost_v_loss, objective, _, kl, _ = agent.train(trajs=trajectories)
-        log_data = {'objective' : objective, 'value loss' : v_loss, 'cost value loss' : cost_v_loss, 'kl' : kl}
-        if main_args.wandb: wandb.log(log_data)
-        print(log_data)
-        agent.save()
-
+        print(f'loss : {loss_mean}')
+        # v_loss, cost_v_loss, objective, _, kl, _ = agent.train(trajs=trajectories)
+        # log_data = {'objective' : objective, 'value loss' : v_loss, 'cost value loss' : cost_v_loss, 'kl' : kl}
+        # if main_args.wandb: wandb.log(log_data)
+        # print(log_data)
+        if (epoch+1) % 3 == 0:
+            # agent.save()
+            torch.save(agent, 'GRUNet.pt')
+            print('Model saved.')
 
 
 if __name__ == "__main__":

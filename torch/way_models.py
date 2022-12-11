@@ -21,7 +21,7 @@ class Policy(nn.Module):
     def __init__(self, args):
         super(Policy, self).__init__()
 
-        self.predict_length = 2
+        self.predict_length = args['pred_length']
         self.state_dim = args['state_dim']
         self.action_dim = args['action_dim']
         self.hidden1_units = args['hidden1']
