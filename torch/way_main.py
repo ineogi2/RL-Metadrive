@@ -31,11 +31,14 @@ from PID.PID_controller_v6 import Controller, State
 
 ############ math tools ###########
 
-def norm(pt1, pt2):
+def l1_distance(pt1, pt2):
     return ((pt1[0]-pt2[0])**2 + (pt1[1]-pt2[1])**2)**0.5
 
 def yaw(pt1, pt2):
     return np.arctan2(pt2[1]-pt1[1], pt2[0]-pt1[0])
+
+def norm(pt):
+    return (pt[0]**2+pt[1]**2)**0.5
 
 # relative coordinate
 def position_to_relative_wp(position_list, direction, pred_length):
@@ -70,19 +73,31 @@ def position_to_absolute_wp(position_list):
 # modify waypoint to lane midpoint
 def modify_waypoint(wp_list, cur_lane, info):
     cur_position = np.array(info['vehicle_position']); cur_position[1] *= -1
-    lateral, lane_index, lane_width, dist_to_left, dist_to_right = info['vehicle_heading_sine']
+    lateral, _, lane_width, _, _ = info['vehicle_heading_sine']
     lateral = lateral/norm(lateral)
-    lateral[1] *= -1
+    lane_heading = np.array([lateral[1], -lateral[0]])
     pred_length = len(wp_list)//2
     
     modified_wp = []
     for i in range(pred_length):
         dx, dy = wp_list[2*i], wp_list[2*i+1]
-        wp = cur_position+np.array([dx, dy])
-        wp_to_lane_dist = cur_lane.distance([wp[0], -wp[1]])
-        if wp_to_lane_dist <= lane_width:
-            # new_wp = 
-            modified_wp.append()
+        wp = cur_position+np.array([dx, dy])                    # real position of waypoint
+        wp_to_vehicle_dist = l1_distance(wp, cur_position)
+        wp_to_lane_dist = cur_lane.distance([wp[0], -wp[1]])    # distance from waypoint to current lane
+        wp_to_lane_sign = np.dot(lateral, [dx, dy])     # positive : left wp / negative : right wp
+
+        if wp_to_lane_dist <= lane_width/2:
+            new_dx_dy = lane_heading*wp_to_vehicle_dist
+        else:
+            if wp_to_lane_sign >= 0:
+                new_dx_dy = lateral*lane_width+lane_heading*wp_to_vehicle_dist
+            else:
+                new_dx_dy = lateral*(-lane_width)+lane_heading*wp_to_vehicle_dist
+        # print(new_dx_dy)
+        modified_wp.append(new_dx_dy[0])
+        modified_wp.append(new_dx_dy[1])
+    
+    return modified_wp
 
 
 ###################################
@@ -136,36 +151,11 @@ class GRUNet(nn.Module):
         return pred_wp
 
 
-def train(main_args):
-    algo_idx = 1
-    agent_name = '1212'
-    env_name = "Safe-metadrive-env"
+def train(main_args, model_args):
     max_ep_len = 1500
     max_episodes = 10
     epochs = 2500
     save_freq = 10
-    algo = '{}_{}'.format(agent_name, algo_idx)
-    save_name = '_'.join(env_name.split('-')[:-1])
-    save_name = "result/{}_{}".format(save_name, algo)
-    args = {
-        'agent_name':agent_name,
-        'save_name': save_name,
-        'discount_factor':0.99,
-        'hidden1':256,
-        'hidden2':128,
-        'v_lr':2e-4,
-        'cost_v_lr':2e-4,
-        'value_epochs':200,
-        'batch_size':10000,
-        'num_conjugate':10,
-        'max_decay_num':10,
-        'line_decay':0.8,
-        'max_kl':0.01,
-        'damping_coeff':0.01,
-        'gae_coeff':0.97,
-        'cost_d':10.0/1000.0,
-        'pred_length':2
-    }
     if torch.cuda.is_available():
         device = torch.device('cuda')
         print('[torch] cuda is used.')
@@ -174,7 +164,7 @@ def train(main_args):
         print('[torch] cpu is used.')
 
     # for random seed
-    seed = algo_idx + random.randint(0, 100)
+    seed = model_args['algo_idx'] + random.randint(0, 100)
     np.random.seed(seed)
     random.seed(seed)
 
@@ -187,8 +177,8 @@ def train(main_args):
                     start_seed=random.randint(0, 1000)))
     
     # load agent
-    # agent = Agent(env, device, args)
-    agent = GRUNet(args, env).to(device)
+    # agent = Agent(env, device, model_args)
+    agent = GRUNet(model_args, env).to(device)
     if os.path.isfile('GRUNet.pt'):
         agent = torch.load('GRUNet.pt')
         print('[Load] success.')
@@ -200,7 +190,7 @@ def train(main_args):
 
     # for wandb
     if main_args.wandb:
-        wandb.init(project='[torch] CPO', entity='ineogi2', name=f'{agent_name}-{algo_idx}-train')
+        wandb.init(project='[torch] CPO', entity='ineogi2', name=f"{model_args['agent_name']}-{model_args['algo_idx']}-train")
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
 
     for epoch in range(epochs):
@@ -229,7 +219,8 @@ def train(main_args):
                 # action_tensor = agent.getAction(state_tensor, is_train=True)
                 action_tensor = agent(state_tensor)
                 waypoints = action_tensor.detach().cpu().numpy()
-                print(waypoints)
+                waypoints = modify_waypoint(waypoints, env.vehicle.lane, info)
+                # print(waypoints)
                 # waypoints = [1,0,2,1,3,2,4,3,5,4]
 
                 state_converter.state_update(info, waypoints)
@@ -293,34 +284,9 @@ def train(main_args):
     if main_args.graph: graph.update(None, finished=True)
 
 
-def imitaion_learning(main_args):
-    algo_idx = 1
-    agent_name = '1212'
-    env_name = "Safe-metadrive-env"
+def imitaion_learning(main_args, model_args):
     max_ep_len = 1000
     epochs = 500
-    algo = '{}_{}'.format(agent_name, algo_idx)
-    save_name = '_'.join(env_name.split('-')[:-1])
-    save_name = "result/{}_{}".format(save_name, algo)
-    args = {
-        'agent_name':agent_name,
-        'save_name': save_name,
-        'discount_factor':0.99,
-        'hidden1':256,
-        'hidden2':128,
-        'v_lr':2e-4,
-        'cost_v_lr':2e-4,
-        'value_epochs':200,
-        'batch_size':10000,
-        'num_conjugate':10,
-        'max_decay_num':10,
-        'line_decay':0.8,
-        'max_kl':0.01,
-        'damping_coeff':0.01,
-        'gae_coeff':0.97,
-        'cost_d':10.0/1000.0,
-        'pred_length':2
-    }
     if torch.cuda.is_available():
         device = torch.device('cuda')
         print('[torch] cuda is used.')
@@ -337,8 +303,8 @@ def imitaion_learning(main_args):
                     traffic_density=0.0,
                     start_seed=random.randint(0,1000)))
 
-    # agent = Agent(env, device, args)
-    agent = GRUNet(args, env).to(device)
+    # agent = Agent(env, device, model_args)
+    agent = GRUNet(model_args, env).to(device)
     if os.path.isfile('GRUNet.pt'):
         agent = torch.load('GRUNet.pt')
         print('[Load] success.')
@@ -350,10 +316,10 @@ def imitaion_learning(main_args):
     np.random.seed(seed)
     random.seed(seed)
 
-    pred_length = args['pred_length']
+    pred_length = model_args['pred_length']
 
     if main_args.wandb:
-        wandb.init(project='[torch] CPO', entity='ineogi2', name=f'{agent_name}-{algo_idx}-imitation learning')
+        wandb.init(project='[torch] CPO', entity='ineogi2', name=f"{model_args['agent_name']}-{model_args['algo_idx']}-imitation learning")
 
     # for imitation learning
     import torch.optim as optim
@@ -447,9 +413,39 @@ if __name__ == "__main__":
     parser.add_argument('--wandb', action='store_true', help='For Wandb.')
     parser.add_argument('--expert', action='store_true', help='For expert takeover')
     parser.add_argument('--render', action='store_true', help='For rendering')
-    args = parser.parse_args()
-    dict_args = vars(args)
-    if args.imitation:
-        imitaion_learning(args)
+    main_args = parser.parse_args()
+
+    algo_idx = 1
+    agent_name = '1212'
+    env_name = "Safe-metadrive-env"
+    algo = '{}_{}'.format(agent_name, algo_idx)
+    save_name = '_'.join(env_name.split('-')[:-1])
+    save_name = "result/{}_{}".format(save_name, algo)
+
+    model_args = {
+        'algo_idx':1,
+        'agent_name':'1212',
+        'env_name':'Safe-metadrive-env',
+        'agent_name':agent_name,
+        'save_name': save_name,
+        'discount_factor':0.99,
+        'hidden1':256,
+        'hidden2':128,
+        'v_lr':2e-4,
+        'cost_v_lr':2e-4,
+        'value_epochs':200,
+        'batch_size':10000,
+        'num_conjugate':10,
+        'max_decay_num':10,
+        'line_decay':0.8,
+        'max_kl':0.01,
+        'damping_coeff':0.01,
+        'gae_coeff':0.97,
+        'cost_d':10.0/1000.0,
+        'pred_length':2
+    }
+
+    if main_args.imitation:
+        imitaion_learning(main_args, model_args)
     else:
-        train(args)
+        train(main_args, model_args)

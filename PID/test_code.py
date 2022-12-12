@@ -11,6 +11,15 @@ from metadrive import MetaDriveEnv
 epochs = 1
 step_max = 10000
 
+def l1_distance(pt1, pt2):
+    return ((pt1[0]-pt2[0])**2 + (pt1[1]-pt2[1])**2)**0.5
+
+def yaw(pt1, pt2):
+    return np.arctan2(pt2[1]-pt1[1], pt2[0]-pt1[0])
+
+def norm(pt):
+    return (pt[0]**2+pt[1]**2)**0.5
+
 def position_to_relative_wp(position_list, direction, pred_length):
     wp_list = deque()
 
@@ -39,6 +48,36 @@ def position_to_absolute_wp(position_list):
 
     return wp_list
 
+# modify waypoint to lane midpoint
+def modify_waypoint(wp_list, cur_lane, info):
+    cur_position = np.array(info['vehicle_position']); cur_position[1] *= -1
+    lateral, _, lane_width, _, _ = info['vehicle_heading_sine']
+    lateral = lateral/norm(lateral)
+    lane_heading = np.array([lateral[1], -lateral[0]])
+    pred_length = len(wp_list)//2
+
+    modified_wp = []
+    for i in range(pred_length):
+        dx, dy = wp_list[2*i], wp_list[2*i+1]
+        wp = cur_position+np.array([dx, dy])                    # real position of waypoint
+        wp_to_vehicle_dist = l1_distance(wp, cur_position)
+        wp_to_lane_dist = cur_lane.distance([wp[0], -wp[1]])    # distance from waypoint to current lane
+        wp_to_lane_sign = np.dot(lateral, [dx, dy])     # positive : left wp / negative : right wp
+
+        if wp_to_lane_dist <= lane_width/2:
+            new_dx_dy = lane_heading*wp_to_vehicle_dist
+        else:
+            if wp_to_lane_sign >= 0:
+                new_dx_dy = lateral*lane_width+lane_heading*wp_to_vehicle_dist
+            else:
+                new_dx_dy = lateral*(-lane_width)+lane_heading*wp_to_vehicle_dist
+        # print(new_dx_dy)
+        modified_wp.append(new_dx_dy[0])
+        modified_wp.append(new_dx_dy[1])
+    
+    return modified_wp
+
+
 for epoch in range(epochs):
 
     # map_num = random.randint(1, 10)
@@ -58,14 +97,13 @@ for epoch in range(epochs):
 
     with open('1_1.pkl', 'rb') as f:
         waypoints_list = pickle.load(f)
-    # print(waypoints_list)
+    print(waypoints_list)
     print(f"\nepoch : {epoch}")
     
     state = env.reset()
     # env.vehicle.expert_takeover = True
-    # controller.reset()
+    controller.reset()
     state, reward, done, info = env.step([0,0])
-    # step = 1
     acc_list = []
     steering_list = []
     state_list = []
@@ -77,10 +115,11 @@ for epoch in range(epochs):
     while not done:
 
         waypoints = waypoints_list.pop(0)
-        print(waypoints)
+        # waypoints = modify_waypoint(waypoints, env.vehicle.lane, info)
+        # print(waypoints)
 
         state_converter.state_update(info, waypoints)
-        print(str(state_converter))
+        # print(str(state_converter))
         controller.update_all(state_converter)
         controller.update_controls()
         steer = controller.steer
@@ -88,11 +127,12 @@ for epoch in range(epochs):
 
         state, reward, done, info = env.step([steer, acc])
         # state, reward, done, info = env.step([0, 0])
+        # print(info['vehicle_heading_sine'][0]/l1_dist(info['vehicle_heading_sine'][0]), info['vehicle_heading'])
 
         # position = [info['vehicle_position'][0], -info['vehicle_position'][1]]
         # direction = [info['vehicle_heading'][0], -info['vehicle_heading'][1]]
 
-        position_list.append(info['vehicle_position'])
+        # position_list.append(info['vehicle_position'])
         # direction_list.append(direction)
 
         # state_list.append(state)
