@@ -97,7 +97,7 @@ for epoch in range(epochs):
 
     with open('1_1.pkl', 'rb') as f:
         waypoints_list = pickle.load(f)
-    print(waypoints_list)
+    # print(waypoints_list)
     print(f"\nepoch : {epoch}")
     
     state = env.reset()
@@ -115,7 +115,7 @@ for epoch in range(epochs):
     while not done:
 
         waypoints = waypoints_list.pop(0)
-        # waypoints = modify_waypoint(waypoints, env.vehicle.lane, info)
+        waypoints = modify_waypoint(waypoints, env.vehicle.lane, info)
         # print(waypoints)
 
         state_converter.state_update(info, waypoints)
