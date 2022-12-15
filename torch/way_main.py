@@ -20,6 +20,7 @@ import gym
 import sys
 from collections import deque
 import os
+import matplotlib.pyplot as plt
 
 sys.path.append("/home/ineogi2/RL-Lab/metadrive")
 from metadrive import SafeMetaDriveEnv
@@ -127,11 +128,8 @@ class GRUNet(nn.Module):
 
         x = self.act_fn(self.fc1(x))
         x = self.act_fn(self.fc2(x))
+        z = self.fc_mean(x)
 
-        # pred_wp = self.output_act_fn(self.fc_mean(x))
-
-        # for prediction of waypoints
-        z = self.act_fn(self.fc_mean(x))
         if z.dim() == 1:
             wp = torch.zeros(2).to("cuda")
         else:
@@ -163,12 +161,12 @@ def train(main_args, model_args):
         device = torch.device('cpu')
         print('[torch] cpu is used.')
 
-    # for random seed
+    """ for random seed """
     seed = model_args['algo_idx'] + random.randint(0, 100)
     np.random.seed(seed)
     random.seed(seed)
 
-    # env = Env(env_name, seed, max_ep_len)
+    """ env = Env(env_name, seed, max_ep_len) """
     env=SafeMetaDriveEnv(dict(use_render=True if main_args.render else False,
                     manual_control=True if main_args.expert else False,
                     random_lane_width=True,
@@ -176,19 +174,20 @@ def train(main_args, model_args):
                     traffic_density=0,
                     start_seed=random.randint(0, 1000)))
     
-    # load agent
-    # agent = Agent(env, device, model_args)
-    agent = GRUNet(model_args, env).to(device)
-    if os.path.isfile('GRUNet.pt'):
-        agent = torch.load('GRUNet.pt')
-        print('[Load] success.')
-    else:
-        print('[New] model')
+    """ for CPO """
+    agent = Agent(env, device, model_args)
+    """ for Neural Network """
+    # agent = GRUNet(model_args, env).to(device)
+    # if os.path.isfile(f"{model_args['agent_name']}-GRUNet.pt"):
+    #     agent = torch.load(f"{model_args['agent_name']}-GRUNet.pt")
+    #     print('[Load] success.')
+    # else:
+    #     print('[New] model')
 
     state_converter = State()
     controller = Controller()
 
-    # for wandb
+    """ for wandb """
     if main_args.wandb:
         wandb.init(project='[torch] CPO', entity='ineogi2', name=f"{model_args['agent_name']}-{model_args['algo_idx']}-train")
     if main_args.graph: graph = Graph(10, "TRPO", ['score', 'cv', 'policy objective', 'value loss', 'kl divergence', 'entropy'])
@@ -216,11 +215,11 @@ def train(main_args, model_args):
             while True:                
                 step += 1
                 state_tensor = torch.tensor(state, device=device, dtype=torch.float)
-                # action_tensor = agent.getAction(state_tensor, is_train=True)
-                action_tensor = agent(state_tensor)
+                action_tensor = agent.getAction(state_tensor, is_train=True)
+                # action_tensor = agent(state_tensor)
                 waypoints = action_tensor.detach().cpu().numpy()
-                waypoints = modify_waypoint(waypoints, env.vehicle.lane, info)
-                # print(waypoints)
+                # waypoints = modify_waypoint(waypoints, env.vehicle.lane, info)
+                print(waypoints)
                 # waypoints = [1,0,2,1,3,2,4,3,5,4]
 
                 state_converter.state_update(info, waypoints)
@@ -295,7 +294,7 @@ def imitaion_learning(main_args, model_args):
         print('[torch] cpu is used.')
 
 
-    # env = Env(env_name, seed, max_ep_len)
+    """ env = Env(env_name, seed, max_ep_len) """
     env=SafeMetaDriveEnv(dict(use_render=True if main_args.render else False,
                     manual_control=True,
                     # random_lane_width=True,
@@ -303,15 +302,17 @@ def imitaion_learning(main_args, model_args):
                     traffic_density=0.0,
                     start_seed=random.randint(0,1000)))
 
-    # agent = Agent(env, device, model_args)
-    agent = GRUNet(model_args, env).to(device)
-    if os.path.isfile('GRUNet.pt'):
-        agent = torch.load('GRUNet.pt')
-        print('[Load] success.')
-    else:
-        print('[New] model')
+    """ for CPO """
+    agent = Agent(env, device, model_args)
+    """ for Neural Network """
+    # agent = GRUNet(model_args, env).to(device)
+    # if os.path.isfile(f"{model_args['agent_name']}-GRUNet.pt"):
+    #     agent = torch.load(f"{model_args['agent_name']}-GRUNet.pt")
+    #     print('[Load] success.')
+    # else:
+    #     print('[New] model')
 
-    # for random seed
+    """ for random seed """
     seed = algo_idx + random.randint(0, 100)
     np.random.seed(seed)
     random.seed(seed)
@@ -321,18 +322,17 @@ def imitaion_learning(main_args, model_args):
     if main_args.wandb:
         wandb.init(project='[torch] CPO', entity='ineogi2', name=f"{model_args['agent_name']}-{model_args['algo_idx']}-imitation learning")
 
-    # for imitation learning
-    import torch.optim as optim
-    # optimizer = optim.Adam(agent.policy.parameters(), lr=1e-3)
-    optimizer = optim.Adam(agent.parameters(), lr=1e-3)
-    loss_func = torch.nn.MSELoss()
+    """ for imitation learning """
+    # import torch.optim as optim
+    # optimizer = optim.Adam(agent.parameters(), lr=1e-3)
+    # loss_func = torch.nn.MSELoss()
+    # loss_list = []
 
     for epoch in range(epochs):
 
         trajectories = []; loss_mean = 0
         state_list = deque(maxlen=pred_length+1)
         position_list = deque(maxlen=pred_length+1)
-        direction_list = deque(maxlen=pred_length+1)
         reward_list = deque(maxlen=pred_length+1)
         cost_list = deque(maxlen=pred_length+1)
         done_list = deque(maxlen=pred_length+1)
@@ -379,30 +379,42 @@ def imitaion_learning(main_args, model_args):
 
             if done: break
 
-        batch_size = len(trajectories)
-        for idx in range(batch_size):
-            batch_state = torch.tensor(trajectories[idx][0], device=device)
-            wp_data = torch.tensor(trajectories[idx][1], device=device)
-            wp_pred = agent(batch_state)
-            wp_pred = wp_pred.clone().detach().requires_grad_(True).type(torch.float64)
-            print(wp_data, wp_pred)
+        """ for Neural Network """
+        # batch_size = len(trajectories)
+        # for idx in range(batch_size):
+        #     batch_state = torch.tensor(trajectories[idx][0], device=device)
+        #     wp_data = torch.tensor(trajectories[idx][1], device=device).float()
+        #     wp_pred = agent(batch_state).float()
+        #     # wp_pred = wp_pred.clone().detach().requires_grad_(True).type(torch.float64)
+        #     # print(wp_data.data, wp_pred.data)
 
-            loss = loss_func(wp_data, wp_pred)
-            loss_mean += loss.item()
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
+        #     loss = loss_func(wp_data, wp_pred)
+        #     loss_mean += loss.item()
+        #     loss.backward()
+        #     optimizer.step()
+        #     optimizer.zero_grad()
+        # loss_mean /= batch_size
+        # print(f'\nepoch : {epoch+1}')
+        # print(f'loss : {loss_mean}'); loss_list.append(loss_mean)
+        # if (epoch+1) % 3 == 0:
+        #     torch.save(agent, f"{model_args['agent_name']}-GRUNet.pt")
+        #     print('Model saved.')
+        # if len(loss_list) % 10 == 0:
+        #     plt.figure()
+        #     plt.plot(loss_list)
+        #     plt.xlabel('Epochs'); plt.ylabel('Loss')
+        #     plt.savefig(f"{model_args['agent_name']}-{model_args['algo_idx']}-GRUNet-loss.png")
+        #     print('Loss figure saved.')
 
+        """ for CPO """
         print(f'\nepoch : {epoch+1}')
-        print(f'loss : {loss_mean}')
-        # v_loss, cost_v_loss, objective, _, kl, _ = agent.train(trajs=trajectories)
-        # log_data = {'objective' : objective, 'value loss' : v_loss, 'cost value loss' : cost_v_loss, 'kl' : kl}
-        # if main_args.wandb: wandb.log(log_data)
-        # print(log_data)
+        v_loss, cost_v_loss, objective, _, kl, _ = agent.train(trajs=trajectories)
+        log_data = {'objective' : objective, 'value loss' : v_loss, 'cost value loss' : cost_v_loss, 'kl' : kl}
+        if main_args.wandb: wandb.log(log_data)
+        print(log_data)
         if (epoch+1) % 3 == 0:
-            # agent.save()
-            torch.save(agent, 'GRUNet.pt')
-            print('Model saved.')
+            agent.save()
+
 
 
 if __name__ == "__main__":
@@ -415,7 +427,7 @@ if __name__ == "__main__":
     parser.add_argument('--render', action='store_true', help='For rendering')
     main_args = parser.parse_args()
 
-    algo_idx = 1
+    algo_idx = 3
     agent_name = '1212'
     env_name = "Safe-metadrive-env"
     algo = '{}_{}'.format(agent_name, algo_idx)
@@ -423,10 +435,9 @@ if __name__ == "__main__":
     save_name = "result/{}_{}".format(save_name, algo)
 
     model_args = {
-        'algo_idx':1,
-        'agent_name':'1212',
-        'env_name':'Safe-metadrive-env',
+        'algo_idx':algo_idx,
         'agent_name':agent_name,
+        'env_name':env_name,
         'save_name': save_name,
         'discount_factor':0.99,
         'hidden1':256,
@@ -442,7 +453,7 @@ if __name__ == "__main__":
         'damping_coeff':0.01,
         'gae_coeff':0.97,
         'cost_d':10.0/1000.0,
-        'pred_length':2
+        'pred_length':5
     }
 
     if main_args.imitation:

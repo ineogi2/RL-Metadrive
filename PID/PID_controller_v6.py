@@ -115,7 +115,8 @@ class Controller():
         self.steer = np.fmax(np.fmin(input_steer, 1.0), -1.0)
         
         # Acceleration
-        self.acc = 0.7*(self._aim_speed - self._current_speed)
+        # self.acc = 0.7*(self._aim_speed - self._current_speed)
+        self.acc = 0.7*(25 - self._current_speed)
         self.acc = np.fmax(np.fmin(self.acc, 1.0), 0.0)
 
 class State():
