@@ -427,8 +427,8 @@ if __name__ == "__main__":
     parser.add_argument('--render', action='store_true', help='For rendering')
     main_args = parser.parse_args()
 
-    algo_idx = 3
-    agent_name = '1212'
+    algo_idx = 1
+    agent_name = '0102'
     env_name = "Safe-metadrive-env"
     algo = '{}_{}'.format(agent_name, algo_idx)
     save_name = '_'.join(env_name.split('-')[:-1])
@@ -453,7 +453,7 @@ if __name__ == "__main__":
         'damping_coeff':0.01,
         'gae_coeff':0.97,
         'cost_d':10.0/1000.0,
-        'pred_length':5
+        'pred_length':3
     }
 
     if main_args.imitation:

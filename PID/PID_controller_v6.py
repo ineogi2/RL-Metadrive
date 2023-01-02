@@ -33,7 +33,8 @@ class Controller():
         self._current_y = state._current_y
         self._current_yaw = state._current_yaw
         self._current_speed = state._current_speed
-        self._aim_speed = 6*state._max_dist_sq**0.5
+        # self._aim_speed = 6*state._max_dist_sq**0.5
+        self._aim_speed = 20
 
     def _update_waypoints(self, state):
         self.waypoints = state._waypoints

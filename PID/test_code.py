@@ -85,7 +85,7 @@ for epoch in range(epochs):
     map_num, start_seed_num = 1,1
 
     env=MetaDriveEnv(dict(use_render=True,
-                        manual_control=False,
+                        manual_control=True,
                         # random_lane_width=True,
                         # random_lane_num=True,
                         map = map_num,
@@ -126,6 +126,8 @@ for epoch in range(epochs):
         acc = controller.acc
 
         state, reward, done, info = env.step([steer, acc])
+        print(state.shape)
+        print(state[-3:])
         # state, reward, done, info = env.step([0, 0])
         # print(info['vehicle_heading_sine'][0]/l1_dist(info['vehicle_heading_sine'][0]), info['vehicle_heading'])
 

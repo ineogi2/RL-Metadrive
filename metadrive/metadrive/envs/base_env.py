@@ -388,6 +388,12 @@ class BaseEnv(gym.Env):
             self.episode_lengths[v_id] += 1
             step_infos[v_id]["episode_length"] = self.episode_lengths[v_id]
 
+        ##### add lane info #####
+        lane_index = self.vehicles['default_agent'].lane_index[2]
+        lane_one_hot = np.zeros(3); lane_one_hot[lane_index] = 1
+        obses['default_agent'] = np.concatenate((obses['default_agent'], np.array(lane_one_hot)), axis=0)
+        #########################
+
         if not self.is_multi_agent:
             return self._wrap_as_single_agent(obses), self._wrap_as_single_agent(rewards), \
                    self._wrap_as_single_agent(dones), self._wrap_as_single_agent(step_infos)

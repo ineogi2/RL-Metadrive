@@ -20,7 +20,7 @@ EPS = 1e-8
 @torch.jit.script
 def normalize(a, maximum, minimum):
     temp_a = 1.0/(maximum - minimum)
-    temp_b = minimum/(minimum - maximum)
+    temp_b = -minimum/(minimum - maximum)
     temp_a = torch.ones_like(a)*temp_a
     temp_b = torch.ones_like(a)*temp_b
     return temp_a*a + temp_b
@@ -31,7 +31,8 @@ def unnormalize(a, maximum, minimum):
     temp_b = minimum
     temp_a = torch.ones_like(a)*temp_a
     temp_b = torch.ones_like(a)*temp_b
-    return temp_a*a + temp_b
+    # return temp_a*a + temp_b
+    return a
 
 @torch.jit.script
 def clip(a, maximum, minimum):
@@ -66,15 +67,23 @@ class Agent:
         self.value_epochs = args['value_epochs']
         self.batch_size = args['batch_size']
         self.cost_d = args['cost_d']
+        self.pred_length = args['pred_length']
 
         # constant about env
-        self.state_dim = env.observation_space.shape[0]
+        # self.state_dim = env.observation_space.shape[0]
         # self.action_dim = env.action_space.shape[0]
+        self.state_dim = 262
         self.action_dim = 32
         # self.action_bound_min = torch.tensor(env.action_space.low, device=device)
         # self.action_bound_max = torch.tensor(env.action_space.high, device=device)
-        self.action_bound_min = torch.tensor(-5, device=device)
-        self.action_bound_max = torch.tensor(5, device=device)
+        action_bound_min = []
+        action_bound_max = []
+        for i in range(1, self.pred_length+1):
+            action_bound_min += [-1.5*i, -1.5*i]
+            action_bound_max += [1.5*i, 1.5*i]
+
+        self.action_bound_min = torch.tensor(action_bound_min, device=device)
+        self.action_bound_max = torch.tensor(action_bound_max, device=device)
 
         # declare value and policy
         args['state_dim'] = self.state_dim
