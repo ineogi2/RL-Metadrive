@@ -55,8 +55,8 @@ class Policy(nn.Module):
         for i in range(1, self.predict_length+1):
             z = self.gru_way(wp, z)
             d_wp = self.fc_way(z)
-            d_wp = torch.clamp(d_wp, -1.5*i, 1.5*i)
-            wp = d_wp
+            d_wp = torch.clamp(d_wp, -1.5, 1.5)
+            wp = wp + d_wp
             output_wp.append(wp)
 
         if z.dim() == 1:

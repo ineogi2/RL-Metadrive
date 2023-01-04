@@ -219,11 +219,11 @@ def train(main_args, model_args):
                 # action_tensor = agent(state_tensor)
                 waypoints = action_tensor.detach().cpu().numpy()
                 # waypoints = modify_waypoint(waypoints, env.vehicle.lane, info)
-                print(waypoints)
+                # print(waypoints)
                 # waypoints = [1,0,2,1,3,2,4,3,5,4]
 
                 state_converter.state_update(info, waypoints)
-                # print(str(state_converter))
+                print(str(state_converter))
                 controller.update_all(state_converter)
                 controller.update_controls()
                 steer = controller.steer
@@ -374,7 +374,7 @@ def imitaion_learning(main_args, model_args):
             if len(state_list) == pred_length+1:
                 # waypoints = position_to_relative_wp(position_list, direction_list[0], pred_length)
                 waypoints = position_to_absolute_wp(position_list)
-                # print(waypoints)
+                print(waypoints)
                 trajectories.append([state_list[0], waypoints, reward_list[0], cost_list[0], done_list[0], fail_list[0], state_list[1]])
 
             if done: break
@@ -453,7 +453,7 @@ if __name__ == "__main__":
         'damping_coeff':0.01,
         'gae_coeff':0.97,
         'cost_d':10.0/1000.0,
-        'pred_length':3
+        'pred_length':2
     }
 
     if main_args.imitation:
