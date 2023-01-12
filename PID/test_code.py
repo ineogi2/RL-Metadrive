@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 from collections import deque
 
+sys.path.append("/home/ineogi2/RL-Lab/PID/past")
 from PID_controller_v6 import Controller, State
 
 sys.path.append("/home/ineogi2/RL-Lab/metadrive")
@@ -125,10 +126,11 @@ for epoch in range(epochs):
         steer = controller.steer
         acc = controller.acc
 
-        state, reward, done, info = env.step([steer, acc])
-        print(state.shape)
-        print(state[-3:])
-        # state, reward, done, info = env.step([0, 0])
+        # state, reward, done, info = env.step([steer, acc])
+        # print(state.shape)
+        # print(state[-3:])
+        state, reward, done, info = env.step([0, 0])
+        print(env.vehicle.throttle_brake)
         # print(info['vehicle_heading_sine'][0]/l1_dist(info['vehicle_heading_sine'][0]), info['vehicle_heading'])
 
         # position = [info['vehicle_position'][0], -info['vehicle_position'][1]]

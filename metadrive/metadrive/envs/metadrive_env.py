@@ -252,18 +252,31 @@ class MetaDriveEnv(BaseEnv):
         else:
             lateral_factor = 1.0
 
+
+        ############## chagned here #################
         reward = 0.0
-        reward += self.config["driving_reward"] * (long_now - long_last) * lateral_factor * positive_road
-        reward += self.config["speed_reward"] * (vehicle.speed / vehicle.max_speed) * positive_road
+        driving_reward = self.config["driving_reward"] * (long_now - long_last) * lateral_factor * positive_road
+        reward += driving_reward
+
+        speed_reward = self.config["speed_reward"] * (vehicle.speed / vehicle.max_speed) * positive_road
+        # env.vehicle.config.update({'max_speed':30}, allow_add_new_key=True) / snu cml
+        reward += speed_reward
+
+        lane_deviation = vehicle.heading_diff_sine(vehicle.lane)[0]
+        # reward -= abs(lane_deviation)/10
+        #############################################
+
 
         step_info["step_reward"] = reward
 
         ##############changed here!!!!!!!!!!!!!!!!!!!!!!!#######################################
+        step_info['reward_info'] = (driving_reward, speed_reward, abs(lane_deviation))
         step_info["vehicle_speed"] = vehicle.speed
         step_info["vehicle_position"] = vehicle.position
         #calculate sine value for the heading --> left or right! if 1, car is right side of the lane
         # if -1, car is left side of the lane
-        step_info["vehicle_heading_sine"] = vehicle.heading_diff_sine(vehicle.lane)
+        # step_info["vehicle_heading_sine"] = vehicle.heading_diff_sine(vehicle.lane)
+        step_info['lane_deviation'] = lane_deviation
         step_info["vehicle_length"] = vehicle.top_down_length
         step_info["vehicle_heading"] = vehicle.heading
         # step_info["vehicle_heading"]= 2*(vehicle.heading_diff(vehicle.lane) - 0.5) #this is a cosine value of the theta difference. 

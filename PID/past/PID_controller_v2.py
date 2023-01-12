@@ -1,7 +1,6 @@
 import math
 import numpy as np
 
-from CPO.torch.agent import clip
 
 class PID_controller:
     def __init__(self, info, speed_gain=[1,0,0.01], steering_gain=[0.7,0,0]):
