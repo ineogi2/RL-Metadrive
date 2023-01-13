@@ -245,8 +245,8 @@ if __name__ == "__main__":
     parser.add_argument('--render', action='store_true', help='For rendering')
     main_args = parser.parse_args()
 
-    algo_idx = 0
-    agent_name = '0112'
+    algo_idx = 1
+    agent_name = '0113'
     env_name = "Safe-metadrive-env"
     algo = '{}_{}'.format(agent_name, algo_idx)
     save_name = '_'.join(env_name.split('-')[:-1])
@@ -259,7 +259,7 @@ if __name__ == "__main__":
         'save_name': save_name,
         'discount_factor':0.99,
         'hidden1':256,
-        'hidden2':128,
+        'hidden2':256,
         'v_lr':2e-4,
         'cost_v_lr':2e-4,
         'value_epochs':200,
