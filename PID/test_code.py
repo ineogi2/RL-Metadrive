@@ -102,7 +102,7 @@ for epoch in range(epochs):
     print(f"\nepoch : {epoch}")
     
     state = env.reset()
-    # env.vehicle.expert_takeover = True
+    env.vehicle.expert_takeover = True
     controller.reset()
     state, reward, done, info = env.step([0,0])
     acc_list = []
@@ -115,22 +115,23 @@ for epoch in range(epochs):
 
     while not done:
 
-        waypoints = waypoints_list.pop(0)
-        waypoints = modify_waypoint(waypoints, env.vehicle.lane, info)
+        # waypoints = waypoints_list.pop(0)
+        # waypoints = modify_waypoint(waypoints, env.vehicle.lane, info)
         # print(waypoints)
 
-        state_converter.state_update(info, waypoints)
+        # state_converter.state_update(info, waypoints)
         # print(str(state_converter))
-        controller.update_all(state_converter)
-        controller.update_controls()
-        steer = controller.steer
-        acc = controller.acc
+        # controller.update_all(state_converter)
+        # controller.update_controls()
+        # steer = controller.steer
+        # acc = controller.acc
 
         # state, reward, done, info = env.step([steer, acc])
         # print(state.shape)
         # print(state[-3:])
         state, reward, done, info = env.step([0, 0])
-        print(env.vehicle.throttle_brake)
+        # print(env.vehicle.throttle_brake)
+        print(env.vehicle.steering)
         # print(info['vehicle_heading_sine'][0]/l1_dist(info['vehicle_heading_sine'][0]), info['vehicle_heading'])
 
         # position = [info['vehicle_position'][0], -info['vehicle_position'][1]]

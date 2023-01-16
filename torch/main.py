@@ -80,6 +80,7 @@ def train(main_args, model_args):
             cv = 0
             step = 0
             broken_step = 0
+            past_steering = 0
 
             state, reward, done, info = env.step([0, 0])
             while True:                
@@ -94,6 +95,7 @@ def train(main_args, model_args):
                 else:
                     next_state, reward, done, info = env.step(action)
 
+                """ reward for broken line cross """
                 cost = info['cost']
                 if cost == 0:
                     broken_step = 0
@@ -109,6 +111,14 @@ def train(main_args, model_args):
                             broken_line+=1
                             reward -= cost
                             cost = 0
+                """ ---------------------------- """
+
+                """ reward for steering angle """
+                current_steering = env.vehicle.steering
+                steering_diff = abs(current_steering - past_steering)
+                reward -= steering_diff
+                past_steering = current_steering
+                """ ------------------------- """
 
                 done = True if step >= max_ep_len else done
                 fail = True if step < max_ep_len and done else False
@@ -189,6 +199,7 @@ def imitaion_learning(main_args, model_args):
         step = 0
         broken_step = 0
         score = 0
+        past_steering = 0
 
         state, reward, done, info = env.step([0, 0])
         while True:
@@ -197,6 +208,7 @@ def imitaion_learning(main_args, model_args):
             next_state, reward, done, info = env.step([0, 0])
             action = (env.vehicle.steering, env.vehicle.throttle_brake)
 
+            """ reward for broken line cross """
             cost = info['cost']
             if cost == 0:
                 broken_step = 0
@@ -208,6 +220,15 @@ def imitaion_learning(main_args, model_args):
                     else:
                         reward -= cost
                         cost = 0
+            """ ---------------------------- """
+
+            """ reward for steering angle """
+            current_steering = env.vehicle.steering
+            steering_diff = abs(current_steering - past_steering)
+            print(steering_diff)
+            reward -= steering_diff
+            past_steering = current_steering
+            """ ------------------------- """
 
             done = True if step >= max_ep_len else done
             fail = True if step < max_ep_len and done else False
