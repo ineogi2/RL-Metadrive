@@ -159,8 +159,8 @@ def train(main_args, model_args):
 ###### Behavior cloning ######
 
 def imitaion_learning(main_args, model_args):
-    max_ep_len = 1000
-    epochs = 500
+    max_ep_len = 1500
+    epochs = 300
     if torch.cuda.is_available():
         device = torch.device('cuda')
         print('[torch] cuda is used.')
@@ -206,7 +206,7 @@ def imitaion_learning(main_args, model_args):
             step += 1
 
             next_state, reward, done, info = env.step([0, 0])
-            action = (env.vehicle.steering, env.vehicle.throttle_brake)
+            action = [env.vehicle.steering, env.vehicle.throttle_brake]
 
             """ reward for broken line cross """
             cost = info['cost']
@@ -222,13 +222,12 @@ def imitaion_learning(main_args, model_args):
                         cost = 0
             """ ---------------------------- """
 
-            """ reward for steering angle """
-            current_steering = env.vehicle.steering
-            steering_diff = abs(current_steering - past_steering)
-            print(steering_diff)
-            reward -= steering_diff
-            past_steering = current_steering
-            """ ------------------------- """
+            # """ reward for steering angle """
+            # current_steering = env.vehicle.steering
+            # steering_diff = abs(current_steering - past_steering)
+            # reward -= steering_diff/10
+            # past_steering = current_steering
+            # """ ------------------------- """
 
             done = True if step >= max_ep_len else done
             fail = True if step < max_ep_len and done else False
@@ -267,7 +266,7 @@ if __name__ == "__main__":
     main_args = parser.parse_args()
 
     algo_idx = 1
-    agent_name = '0113'
+    agent_name = '0123'
     env_name = "Safe-metadrive-env"
     algo = '{}_{}'.format(agent_name, algo_idx)
     save_name = '_'.join(env_name.split('-')[:-1])
@@ -281,8 +280,8 @@ if __name__ == "__main__":
         'discount_factor':0.99,
         'hidden1':256,
         'hidden2':256,
-        'v_lr':2e-4,
-        'cost_v_lr':2e-4,
+        'v_lr':1e-3,
+        'cost_v_lr':1e-3,
         'value_epochs':200,
         'batch_size':10000,
         'num_conjugate':10,
@@ -291,9 +290,9 @@ if __name__ == "__main__":
         'max_kl':0.01,
         'damping_coeff':0.01,
         'gae_coeff':0.97,
-        'cost_d':10.0/1000.0,
+        'cost_d':1.0/1000.0,
         'pred_length':1,
-        'traffic_density':0.2
+        'traffic_density':0.05
     }
 
     if main_args.imitation:
