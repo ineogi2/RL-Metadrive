@@ -32,7 +32,7 @@ class Policy(nn.Module):
         self.fc_log_std = nn.Linear(self.hidden2_units, self.action_dim)
 
         self.act_fn = torch.relu
-        self.output_act_fn = torch.tanh
+        self.output_act_fn = torch.sigmoid
 
 
     def forward(self, x):

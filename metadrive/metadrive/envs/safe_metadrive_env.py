@@ -53,9 +53,9 @@ class SafeMetaDriveEnv(MetaDriveEnv):
         done, done_info = super(SafeMetaDriveEnv, self).done_function(vehicle_id)
         if self.config["safe_rl_env"]:
             if done_info[TerminationState.CRASH_VEHICLE]:
-                done = False
+                done = True
             elif done_info[TerminationState.CRASH_OBJECT]:
-                done = False
+                done = True
         return done, done_info
 
     def setup_engine(self):

@@ -1,0 +1,7 @@
+## 0125 ##
+broken line 에 대한 reward 대신 cost 형태로 바꿔서
+state 에 lane deviation 넣어서 다시 조정 + lane one hot vector 삭제 + cost 에 broken line 말고 deviation 만 => lane deviation 형태는 중앙선에서부터 일정 거리 이상이면 주는 형태로
+두개다 해보자
+
+
+

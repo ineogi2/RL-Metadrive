@@ -217,9 +217,9 @@ def imitaion_learning(main_args, model_args):
                     if broken_step < 20:
                         broken_step += 1
                         cost = 0
-                    else:
-                        reward -= cost
-                        cost = 0
+                    # else:
+                    #     reward -= cost
+                    #     cost = 0
             """ ---------------------------- """
 
             # """ reward for steering angle """
@@ -265,8 +265,8 @@ if __name__ == "__main__":
     parser.add_argument('--render', action='store_true', help='For rendering')
     main_args = parser.parse_args()
 
-    algo_idx = 1
-    agent_name = '0123'
+    algo_idx = 0
+    agent_name = '0126'
     env_name = "Safe-metadrive-env"
     algo = '{}_{}'.format(agent_name, algo_idx)
     save_name = '_'.join(env_name.split('-')[:-1])
@@ -280,8 +280,8 @@ if __name__ == "__main__":
         'discount_factor':0.99,
         'hidden1':256,
         'hidden2':256,
-        'v_lr':1e-3,
-        'cost_v_lr':1e-3,
+        'v_lr':1e-4,
+        'cost_v_lr':1e-4,
         'value_epochs':200,
         'batch_size':10000,
         'num_conjugate':10,
@@ -292,7 +292,7 @@ if __name__ == "__main__":
         'gae_coeff':0.97,
         'cost_d':1.0/1000.0,
         'pred_length':1,
-        'traffic_density':0.05
+        'traffic_density':0.1
     }
 
     if main_args.imitation:
